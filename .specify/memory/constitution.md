@@ -1,55 +1,69 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: Updated to align with Phase I Todo App requirements
+- Added sections: Core principles from user input incorporated
+- Removed sections: None
+- Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ updated
+  - .specify/templates/spec-template.md ✅ updated
+  - .specify/templates/tasks-template.md ✅ updated
+  - .specify/templates/commands/*.md ✅ updated
+- Follow-up TODOs: None
+-->
+# Phase I Constitution - Todo App (In-Memory Python Console)
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Spec-Driven Development
+All implementation must strictly follow approved specifications. No implementation without proper specification and planning. This ensures traceability and prevents scope creep.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Phase Integrity
+Phase I is strictly in-memory and console-based. No external dependencies, databases, APIs, or persistent storage mechanisms are allowed. The application must function entirely in memory.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Reusability Design
+Design must support extension to future phases. Code architecture should allow for easy transition to persistent storage, web interfaces, or additional features in subsequent phases.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Determinism
+Tasks and outputs must be predictable and testable. All features must have clear, testable acceptance criteria and deterministic behavior.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Test-First Development (NON-NEGOTIABLE)
+All features must follow TDD: Write tests first → Verify tests fail → Implement feature → Make tests pass → Refactor. Red-Green-Refactor cycle strictly enforced.
 
-### [PRINCIPLE_6_NAME]
+### VI. Python Standard Library Only
+Only use Python 3.13+ standard library modules. No external dependencies, packages, or third-party libraries beyond what comes with Python. This ensures portability and simplicity.
 
+## Key Standards
 
-[PRINCIPLE__DESCRIPTION]
+### Feature Completeness
+All features (Add, Delete, Update, View, Mark Complete) must have complete specifications before implementation begins. Each feature must include acceptance criteria and test scenarios.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### Code Quality
+Code structure must be modular, clean, and readable. All code must be documented and follow Python best practices. No manual code or human-written implementation without corresponding task definition.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Task Mapping
+Every code file must reference task ID and specification. This ensures traceability from specification through implementation.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Constraints and Boundaries
+- No databases, no persistent storage, no web/API, no AI/ML features
+- Python 3.13+ only
+- CLI interaction only
+- All state reset on program restart
+- No external APIs or web services
+- No network communication
+- No GUI frameworks or web technologies
+- No authentication/authorization requirements
+- No AI services or external AI integration
+- In-memory only (data lost on exit is acceptable)
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Success Criteria
+- All five core features implemented and testable in-memory (Add, Delete, Update, View, Mark Complete)
+- Spec, plan, task, and implementation fully traceable
+- No phase boundary violations
+- Code passes automated review for clean architecture
+- All features have corresponding tests with TDD approach
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This constitution supersedes all other practices and requirements. Any deviation requires explicit amendment with proper approval. All pull requests must verify compliance with these principles. The constitution ensures focus on core learning objectives of the hackathon. All changes must maintain alignment with Spec-Driven Development methodology.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.1.0 | **Ratified**: 2026-01-03 | **Last Amended**: 2026-01-03

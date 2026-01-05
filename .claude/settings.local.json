@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python todo_app.py add \"Buy groceries\")",
+      "Bash(python todo_app.py add \"Walk the dog\")",
+      "Bash(python todo_app.py list)",
+      "Bash(python -c \"\nfrom src.services.todo_manager import TodoManager\nfrom src.cli.cli_interface import CLIInterface\n\n# Initialize the todo manager and CLI interface\ntodo_manager = TodoManager\\(\\)\ncli = CLIInterface\\(todo_manager\\)\n\n# Add an item\ncli.handle_add\\([''Buy groceries'']\\)\n\n# Add another item\ncli.handle_add\\([''Walk the dog'']\\)\n\n# List items\nprint\\(''--- Listing items ---''\\)\ncli.handle_list\\([]\\)\n\n# Complete an item\nprint\\(''--- Completing first item ---''\\)\ncli.handle_complete\\([''1'']\\)\n\n# List items again to see the completion\nprint\\(''--- Listing items after completion ---''\\)\ncli.handle_list\\([]\\)\n\n# Update an item\nprint\\(''--- Updating second item ---''\\)\ncli.handle_update\\([''2'', ''Walk the cat'']\\)\n\n# List items again to see the update\nprint\\(''--- Listing items after update ---''\\)\ncli.handle_list\\([]\\)\n\")",
+      "Bash(python -m unittest discover -s tests/contract -p \"test_*.py\" -v)",
+      "Bash(python -m unittest discover -s tests/integration -p \"test_*.py\" -v)",
+      "Bash(python todo_app.py help)",
+      "Bash(python -c \"\nfrom src.services.todo_manager import TodoManager\nfrom src.cli.cli_interface import CLIInterface\n\n# Initialize the todo manager and CLI interface\ntodo_manager = TodoManager\\(\\)\ncli = CLIInterface\\(todo_manager\\)\n\nprint\\(''=== Testing Full Feature Set ===''\\)\n\n# Test 1: Add items\nprint\\(''1. Adding items:''\\)\ncli.handle_add\\([''Buy groceries'']\\)\ncli.handle_add\\([''Walk the dog'']\\)\ncli.handle_add\\([''Do laundry'']\\)\n\n# Test 2: List items\nprint\\(''\\\\n2. Listing items:''\\)\ncli.handle_list\\([]\\)\n\n# Test 3: Complete an item\nprint\\(''\\\\n3. Completing first item:''\\)\ncli.handle_complete\\([''1'']\\)\n\n# Test 4: List again to see completion\nprint\\(''\\\\n4. Listing after completion:''\\)\ncli.handle_list\\([]\\)\n\n# Test 5: Update an item\nprint\\(''\\\\n5. Updating second item:''\\)\ncli.handle_update\\([''2'', ''Walk'', ''the'', ''cat'']\\)\n\n# Test 6: List again to see update\nprint\\(''\\\\n6. Listing after update:''\\)\ncli.handle_list\\([]\\)\n\n# Test 7: Delete an item\nprint\\(''\\\\n7. Deleting third item:''\\)\ncli.handle_delete\\([''3'']\\)\n\n# Test 8: Final list\nprint\\(''\\\\n8. Final list:''\\)\ncli.handle_list\\([]\\)\n\nprint\\(''\\\\n=== All features working correctly! ===''\\)\n\")"
+    ]
+  }
+}
