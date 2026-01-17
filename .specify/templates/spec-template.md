@@ -98,6 +98,82 @@
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
+
+### Phase II API Endpoints *(include for Phase II web features)*
+
+<!--
+  For Phase II features, specify the REST API endpoints needed.
+  This section defines the API contract between frontend and backend.
+-->
+
+**Base URL**: `/api/v1/[resource]`
+
+#### Endpoint 1: [Operation Name]
+- **Method**: [GET/POST/PUT/PATCH/DELETE]
+- **Path**: `/api/v1/[resource]`
+- **Purpose**: [What this endpoint does]
+- **Request**: [Brief description of request body/params]
+- **Response**: [Brief description of response]
+- **Status Codes**: 200/201/400/404/422/500
+
+#### Endpoint 2: [Operation Name]
+- **Method**: [GET/POST/PUT/PATCH/DELETE]
+- **Path**: `/api/v1/[resource]/{id}`
+- **Purpose**: [What this endpoint does]
+- **Request**: [Brief description of request body/params]
+- **Response**: [Brief description of response]
+- **Status Codes**: 200/201/400/404/422/500
+
+[Add more endpoints as needed]
+
+**Note**: Detailed API contracts (request/response models, validation rules) will be defined in `specs/api/[feature]-api-spec.md`
+
+### Phase II Database Schema *(include for Phase II features with persistent data)*
+
+<!--
+  For Phase II features, specify the database tables and relationships.
+  This section defines the data model without implementation details.
+-->
+
+#### Table 1: [TableName]
+- **Purpose**: [What this table stores]
+- **Key Fields**: [List main fields without types - e.g., id, name, created_at]
+- **Relationships**: [References to other tables]
+- **Constraints**: [Unique constraints, required fields]
+
+#### Table 2: [TableName]
+- **Purpose**: [What this table stores]
+- **Key Fields**: [List main fields]
+- **Relationships**: [References to other tables]
+- **Constraints**: [Unique constraints, required fields]
+
+[Add more tables as needed]
+
+**Note**: Detailed data models (SQLModel schemas, migrations) will be defined in `specs/data-model/[feature]-data-model.md`
+
+### Phase II Frontend Components *(include for Phase II web features)*
+
+<!--
+  For Phase II features, specify the main UI components and user flows.
+  This section defines the frontend structure without implementation details.
+-->
+
+#### Page 1: [PageName]
+- **Route**: `/[route]`
+- **Purpose**: [What this page does]
+- **Components**: [List main components - e.g., TodoList, TodoForm]
+- **State**: [Key state managed - e.g., todos, loading, error]
+- **API Calls**: [Which endpoints this page uses]
+
+#### Component 1: [ComponentName]
+- **Purpose**: [What this component does]
+- **Props**: [Key props without types - e.g., todo, onUpdate, onDelete]
+- **State**: [Local state if any]
+- **Interactions**: [User interactions - e.g., click, submit, toggle]
+
+[Add more pages/components as needed]
+
+**Note**: Detailed user flows will be defined in `specs/user-flows/[feature]-web-flows.md`
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
 ## Success Criteria *(mandatory)*

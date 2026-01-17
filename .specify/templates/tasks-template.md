@@ -20,10 +20,10 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
+- **Phase II Web App** (RECOMMENDED): `api/src/`, `web/src/`
+- **Phase I Single project** (DEPRECATED): `src/`, `tests/` at repository root
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- Paths shown below assume Phase II web app - adjust based on plan.md structure
 
 <!-- 
   ============================================================================
@@ -48,6 +48,33 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
+### Phase II Web Application Setup
+
+**Backend Setup**:
+- [P] [Setup] Initialize FastAPI project structure in `api/`
+- [P] [Setup] Configure Neon PostgreSQL connection in `api/src/database.py`
+- [P] [Setup] Setup Alembic for database migrations in `api/alembic/`
+- [P] [Setup] Configure Pydantic settings in `api/src/config.py`
+- [P] [Setup] Setup pytest for backend tests in `api/tests/`
+- [P] [Setup] Create requirements.txt with FastAPI, SQLModel, Alembic, Pydantic
+
+**Frontend Setup**:
+- [P] [Setup] Initialize Next.js 15+ project with TypeScript in `web/`
+- [P] [Setup] Configure Tailwind CSS in `web/tailwind.config.js`
+- [P] [Setup] Setup API client utilities in `web/src/lib/api.ts`
+- [P] [Setup] Configure Jest and React Testing Library in `web/tests/`
+- [P] [Setup] Create TypeScript types in `web/src/types/`
+- [P] [Setup] Setup environment variables in `web/.env.local`
+
+**Integration Setup**:
+- [Setup] Configure CORS in FastAPI for Next.js frontend
+- [Setup] Setup OpenAPI/Swagger documentation at `/api/v1/docs`
+- [Setup] Create API base URL configuration for frontend
+
+### Phase I Single Project Setup (DEPRECATED - for reference only)
+
+**Purpose**: Project initialization and basic structure
+
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
@@ -60,14 +87,32 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-Examples of foundational tasks (adjust based on your project):
+### Phase II Foundational Tasks
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+**Database Layer**:
+- [ ] T004 Create SQLModel base models in `api/src/models/`
+- [ ] T005 Create initial Alembic migration for database schema
+- [ ] T006 Setup database session management in `api/src/database.py`
+- [ ] T007 [P] Create database connection tests in `api/tests/test_database.py`
+
+**API Layer**:
+- [ ] T008 Create Pydantic request/response schemas in `api/src/schemas/`
+- [ ] T009 Setup FastAPI routers in `api/src/routers/`
+- [ ] T010 [P] Implement error handling middleware in `api/src/middleware/`
+- [ ] T011 [P] Configure CORS for frontend in `api/src/main.py`
+- [ ] T012 [P] Setup OpenAPI documentation in `api/src/main.py`
+
+**Frontend Layer**:
+- [ ] T013 Create API client utilities in `web/src/lib/api.ts`
+- [ ] T014 Create TypeScript types matching API schemas in `web/src/types/`
+- [ ] T015 [P] Create reusable UI components in `web/src/components/ui/`
+- [ ] T016 [P] Setup error handling utilities in `web/src/lib/errors.ts`
+- [ ] T017 [P] Create loading state components in `web/src/components/loading/`
+
+**Integration**:
+- [ ] T018 Test API-frontend integration with health check endpoint
+- [ ] T019 Verify database connection from API
+- [ ] T020 Verify frontend can call API endpoints
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -78,6 +123,37 @@ Examples of foundational tasks (adjust based on your project):
 **Goal**: [Brief description of what this story delivers]
 
 **Independent Test**: [How to verify this story works on its own]
+
+### Phase II Implementation Pattern (Database → API → Frontend)
+
+**Database Tasks** (implement first):
+- [ ] T021 [P] [US1] Create SQLModel for [Entity] in `api/src/models/[entity].py`
+- [ ] T022 [US1] Create Alembic migration for [Entity] table
+- [ ] T023 [P] [US1] Write database model tests in `api/tests/test_models/test_[entity].py`
+
+**API Tasks** (implement second):
+- [ ] T024 [P] [US1] Create Pydantic schemas for [Entity] in `api/src/schemas/[entity].py`
+- [ ] T025 [US1] Implement POST /api/v1/[resource] endpoint in `api/src/routers/[resource].py`
+- [ ] T026 [US1] Implement GET /api/v1/[resource] endpoint
+- [ ] T027 [US1] Implement GET /api/v1/[resource]/{id} endpoint
+- [ ] T028 [US1] Implement PATCH /api/v1/[resource]/{id} endpoint
+- [ ] T029 [US1] Implement DELETE /api/v1/[resource]/{id} endpoint
+- [ ] T030 [P] [US1] Write API endpoint tests in `api/tests/test_api/test_[resource].py`
+
+**Frontend Tasks** (implement third):
+- [ ] T031 [P] [US1] Create TypeScript types in `web/src/types/[entity].ts`
+- [ ] T032 [P] [US1] Create API client functions in `web/src/lib/api/[resource].ts`
+- [ ] T033 [US1] Create [ListPage] component in `web/src/app/[route]/page.tsx`
+- [ ] T034 [US1] Create [ItemComponent] in `web/src/components/[entity]/[Item].tsx`
+- [ ] T035 [US1] Create [FormComponent] in `web/src/components/[entity]/[Form].tsx`
+- [ ] T036 [P] [US1] Write component tests in `web/tests/unit/[entity]/`
+
+**Integration Tasks** (implement last):
+- [ ] T037 [US1] Test end-to-end user flow (create → read → update → delete)
+- [ ] T038 [US1] Test error handling (network errors, validation errors)
+- [ ] T039 [US1] Test loading states across all operations
+
+**Acceptance**: [Specific criteria from spec.md]
 
 ### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
 

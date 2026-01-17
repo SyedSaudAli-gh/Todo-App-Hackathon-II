@@ -1,0 +1,526 @@
+openapi: 3.1.0
+info:
+  title: Todo Management API
+  description: |
+    RESTful API for managing todo items in Phase II Todo Management feature.
+
+    This API provides CRUD operations for todos with persistent storage in Neon PostgreSQL.
+    All endpoints follow RESTful conventions and return JSON responses.
+
+    **Base URL**: `/api/v1`
+
+    **Authentication**: Not required in Phase II (single-user system)
+
+    **Content-Type**: `application/json` for all requests and responses
+  version: 1.0.0
+  contact:
+    name: Todo App API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.yourdomain.com/api/v1
+    description: Production server
+
+tags:
+  - name: todos
+    description: Todo CRUD operations
+
+paths:
+  /todos:
+    get:
+      tags:
+        - todos
+      summary: List all todos
+      description: |
+        Retrieve all todos ordered by creation date (newest first).
+
+        **User Story**: P1 - Create and View Todos
+
+        **Performance**: <500ms p95 response time
+      operationId: listTodos
+      parameters:
+        - name: completed
+          in: query
+          description: Filter by completion status (optional)
+          required: false
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: Successfully retrieved todos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoListResponse'
+              examples:
+                with_todos:
+                  summary: List with todos
+                  value:
+                    todos:
+                      - id: 1
+                        title: Buy groceries
+                        description: Milk, eggs, bread
+                        completed: false
+                        created_at: "2026-01-06T10:00:00Z"
+                        updated_at: "2026-01-06T10:00:00Z"
+                      - id: 2
+                        title: Walk the dog
+                        description: null
+                        completed: true
+                        created_at: "2026-01-06T09:00:00Z"
+                        updated_at: "2026-01-06T11:00:00Z"
+                    total: 2
+                empty:
+                  summary: Empty list
+                  value:
+                    todos: []
+                    total: 0
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - todos
+      summary: Create a new todo
+      description: |
+        Create a new todo item with title and optional description.
+
+        **User Story**: P1 - Create and View Todos
+
+        **Validation**:
+        - Title: Required, 1-200 characters
+        - Description: Optional, max 2000 characters
+
+        **Performance**: <10 seconds from request to display
+      operationId: createTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoCreate'
+            examples:
+              with_description:
+                summary: Todo with description
+                value:
+                  title: Buy groceries
+                  description: Milk, eggs, bread
+              without_description:
+                summary: Todo without description
+                value:
+                  title: Walk the dog
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 1
+                title: Buy groceries
+                description: Milk, eggs, bread
+                completed: false
+                created_at: "2026-01-06T10:00:00Z"
+                updated_at: "2026-01-06T10:00:00Z"
+        '400':
+          description: Invalid JSON format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: BadRequest
+                message: Invalid JSON format
+                details: null
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                empty_title:
+                  summary: Empty title
+                  value:
+                    error: ValidationError
+                    message: Validation failed
+                    details:
+                      - field: title
+                        message: Title is required
+                        type: value_error
+                title_too_long:
+                  summary: Title exceeds max length
+                  value:
+                    error: ValidationError
+                    message: Validation failed
+                    details:
+                      - field: title
+                        message: Title cannot exceed 200 characters
+                        type: value_error
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /todos/{id}:
+    get:
+      tags:
+        - todos
+      summary: Get a single todo
+      description: |
+        Retrieve a specific todo by its unique identifier.
+
+        **User Story**: P1 - Create and View Todos
+      operationId: getTodo
+      parameters:
+        - name: id
+          in: path
+          description: Todo ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Successfully retrieved todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 1
+                title: Buy groceries
+                description: Milk, eggs, bread
+                completed: false
+                created_at: "2026-01-06T10:00:00Z"
+                updated_at: "2026-01-06T10:00:00Z"
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: BadRequest
+                message: Invalid ID format
+                details: ID must be a positive integer
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NotFound
+                message: Todo not found
+                details: No todo with ID 1
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - todos
+      summary: Update a todo
+      description: |
+        Update specific fields of an existing todo. All fields are optional.
+
+        **User Stories**:
+        - P2: Mark Todos Complete (completed field)
+        - P3: Update Todo Details (title, description fields)
+
+        **Validation**:
+        - Title: 1-200 characters (if provided)
+        - Description: Max 2000 characters (if provided)
+        - Completed: Boolean (if provided)
+
+        **Performance**: <1 second visual feedback for completion toggle
+      operationId: updateTodo
+      parameters:
+        - name: id
+          in: path
+          description: Todo ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoUpdate'
+            examples:
+              mark_complete:
+                summary: Mark as complete
+                value:
+                  completed: true
+              update_title:
+                summary: Update title
+                value:
+                  title: Buy groceries and cook dinner
+              update_all:
+                summary: Update all fields
+                value:
+                  title: Buy groceries and cook dinner
+                  description: Milk, eggs, bread, chicken
+                  completed: true
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 1
+                title: Buy groceries and cook dinner
+                description: Milk, eggs, bread, chicken
+                completed: true
+                created_at: "2026-01-06T10:00:00Z"
+                updated_at: "2026-01-06T12:00:00Z"
+        '400':
+          description: Invalid JSON format or ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NotFound
+                message: Todo not found
+                details: No todo with ID 1
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                error: ValidationError
+                message: Validation failed
+                details:
+                  - field: title
+                    message: Title cannot be empty or whitespace only
+                    type: value_error
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - todos
+      summary: Delete a todo
+      description: |
+        Permanently remove a todo. This action cannot be undone.
+
+        **User Story**: P4 - Delete Todos
+
+        **Note**: Hard delete (no soft delete in Phase II)
+      operationId: deleteTodo
+      parameters:
+        - name: id
+          in: path
+          description: Todo ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '204':
+          description: Todo deleted successfully (no content)
+        '400':
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NotFound
+                message: Todo not found
+                details: No todo with ID 1
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    TodoCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Todo title (required)
+          example: Buy groceries
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+          description: Todo description (optional)
+          example: Milk, eggs, bread
+
+    TodoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          nullable: true
+          description: Updated title (optional)
+          example: Buy groceries and cook dinner
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+          description: Updated description (optional)
+          example: Milk, eggs, bread, chicken
+        completed:
+          type: boolean
+          nullable: true
+          description: Updated completion status (optional)
+          example: true
+
+    TodoResponse:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+          example: 1
+        title:
+          type: string
+          description: Todo title
+          example: Buy groceries
+        description:
+          type: string
+          nullable: true
+          description: Todo description
+          example: Milk, eggs, bread
+        completed:
+          type: boolean
+          description: Completion status
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp (UTC)
+          example: "2026-01-06T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp (UTC)
+          example: "2026-01-06T10:00:00Z"
+
+    TodoListResponse:
+      type: object
+      required:
+        - todos
+        - total
+      properties:
+        todos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoResponse'
+          description: List of todos
+        total:
+          type: integer
+          description: Total number of todos
+          example: 2
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: NotFound
+        message:
+          type: string
+          description: Human-readable error message
+          example: Todo not found
+        details:
+          type: string
+          nullable: true
+          description: Additional error details
+          example: No todo with ID 1
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - details
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: ValidationError
+        message:
+          type: string
+          description: Human-readable error message
+          example: Validation failed
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+                example: title
+              message:
+                type: string
+                description: Validation error message
+                example: Title is required
+              type:
+                type: string
+                description: Error type
+                example: value_error

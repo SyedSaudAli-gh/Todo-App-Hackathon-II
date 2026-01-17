@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: User Statistics API
+  description: API endpoint for retrieving authenticated user activity statistics
+  version: 1.0.0
+  contact:
+    name: Todo App API
+    url: http://localhost:8001/api/v1/docs
+
+servers:
+  - url: http://localhost:8001/api/v1
+    description: Development server
+  - url: https://api.todo-app.com/api/v1
+    description: Production server
+
+paths:
+  /users/me/stats:
+    get:
+      summary: Get Current User Statistics
+      description: |
+        Retrieve aggregated activity statistics for the authenticated user.
+
+        Statistics include:
+        - Total tasks created
+        - Completed tasks count
+        - Completion rate percentage
+        - Active days since account creation
+
+        All statistics are calculated in real-time from the database.
+      operationId: getUserStats
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatsResponse'
+              examples:
+                zeroTodos:
+                  summary: User with no todos
+                  value:
+                    total_tasks: 0
+                    completed_tasks: 0
+                    completion_rate: 0.0
+                    active_days: 1
+                partialCompletion:
+                  summary: User with partial completion
+                  value:
+                    total_tasks: 10
+                    completed_tasks: 7
+                    completion_rate: 70.0
+                    active_days: 15
+                fullCompletion:
+                  summary: User with all todos completed
+                  value:
+                    total_tasks: 5
+                    completed_tasks: 5
+                    completion_rate: 100.0
+                    active_days: 30
+        '401':
+          description: Not authenticated - missing or invalid session cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Not authenticated
+        '500':
+          description: Internal server error - failed to calculate statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Failed to calculate statistics
+
+components:
+  schemas:
+    UserStatsResponse:
+      type: object
+      required:
+        - total_tasks
+        - completed_tasks
+        - completion_rate
+        - active_days
+      properties:
+        total_tasks:
+          type: integer
+          minimum: 0
+          description: Total number of todos created by the user
+          example: 10
+        completed_tasks:
+          type: integer
+          minimum: 0
+          description: Number of todos marked as completed
+          example: 7
+        completion_rate:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 100.0
+          description: Percentage of completed todos (0-100)
+          example: 70.0
+        active_days:
+          type: integer
+          minimum: 1
+          description: Number of days since user account creation (inclusive)
+          example: 15
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: Not authenticated
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Better Auth session cookie for authentication
+
+tags:
+  - name: Users
+    description: User-related endpoints including statistics
+
+externalDocs:
+  description: Feature Specification
+  url: ../spec.md
