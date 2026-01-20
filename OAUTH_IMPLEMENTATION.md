@@ -160,7 +160,7 @@ FACEBOOK_APP_ID=your-facebook-app-id
 FACEBOOK_APP_SECRET=your-facebook-app-secret
 
 # Better Auth
-BETTER_AUTH_SECRET=<your-secret>
+BETTER_AUTH_SECRET=your-better-auth-secret
 BETTER_AUTH_URL=http://localhost:3000
 ```
 
