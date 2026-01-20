@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { AuthFormData } from "@/types/landing";
+import { useAuth } from "@/hooks/useAuth";
 
 function mapAuthError(error: unknown): string {
   if (error instanceof Error) {
@@ -22,6 +23,28 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render signup form if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   async function handleSignUp(data: AuthFormData) {
     setLoading(true);

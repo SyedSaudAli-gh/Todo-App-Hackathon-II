@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "@/lib/auth/auth-client";
+import { refreshJwtToken, clearJwtToken } from "@/lib/auth/jwt-manager";
 import type { AuthState, User, Session } from "@/types/auth";
 
 interface AuthContextValue extends AuthState {
@@ -29,18 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
 
-      // COMPREHENSIVE LOGIN TRACE
-      console.log("\n" + "=".repeat(80));
-      console.log("🔐 AUTHCONTEXT LOGIN CALLED");
-      console.log("=".repeat(80));
-      console.log("Email:", email);
-      console.log("Email type:", typeof email);
-      console.log("Email length:", email?.length || 0);
-      console.log("Password type:", typeof password);
-      console.log("Password length:", password?.length || 0);
-      console.log("Password exists:", !!password);
-      console.log("Password is string:", typeof password === 'string');
-      console.log("=".repeat(80));
+      console.log("🔐 Login attempt:", email);
 
       const { signIn } = await import("@/lib/auth/auth-client");
 
@@ -49,30 +39,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       };
 
-      console.log("\n📤 CALLING signIn.email()");
-      console.log("Payload keys:", Object.keys(payload));
-      console.log("Payload.email:", payload.email);
-      console.log("Payload.password length:", payload.password?.length || 0);
-
       const result = await signIn.email(payload);
-
-      console.log("\n✅ signIn.email() RETURNED");
-      console.log("Result:", result);
-      console.log("Result.error:", result?.error);
-      console.log("Result.data:", result?.data);
-      console.log("=".repeat(80) + "\n");
 
       // Check for errors in result
       if (result && result.error) {
         throw new Error(result.error.message || "Login failed");
       }
-    } catch (err) {
-      console.error("\n❌ LOGIN ERROR IN AUTHCONTEXT");
-      console.error("Error type:", typeof err);
-      console.error("Error:", err);
-      console.error("Error message:", err instanceof Error ? err.message : String(err));
-      console.error("=".repeat(80) + "\n");
 
+      // Fetch JWT token after successful login
+      console.log("✓ Login successful, fetching JWT token...");
+      const token = await refreshJwtToken();
+
+      if (token) {
+        console.log("✓ JWT token obtained for API authentication");
+      } else {
+        console.warn("⚠ Failed to obtain JWT token");
+      }
+    } catch (err) {
+      console.error("❌ Login error:", err);
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
       throw err;
@@ -94,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Password must be at least 8 characters");
       }
 
-      console.log("Signup called with:", { email, password: "***", name });
+      console.log("📝 Signup attempt:", { email, name });
       const { signUp } = await import("@/lib/auth/auth-client");
 
       // Ensure payload matches Better Auth contract exactly
@@ -104,21 +88,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password: password,
       };
 
-      console.log("Sending signup payload:", {
-        name: payload.name,
-        email: payload.email,
-        password: "***",
-        payloadKeys: Object.keys(payload)
-      });
-
       const result = await signUp.email(payload);
-      console.log("Signup result:", result);
 
       if (result.error) {
         throw new Error(result.error.message || "Signup failed");
       }
+
+      // Fetch JWT token after successful signup
+      console.log("✓ Signup successful, fetching JWT token...");
+      const token = await refreshJwtToken();
+
+      if (token) {
+        console.log("✓ JWT token obtained for API authentication");
+      } else {
+        console.warn("⚠ Failed to obtain JWT token");
+      }
     } catch (err) {
-      console.error("Signup error:", err);
+      console.error("❌ Signup error:", err);
       const message = err instanceof Error ? err.message : "Signup failed";
       setError(message);
       throw err;
@@ -128,8 +114,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setError(null);
+
+      // Clear JWT token cache first
+      clearJwtToken();
+      console.log("✓ JWT token cache cleared");
+
+      // Then sign out from Better Auth
       const { signOut } = await import("@/lib/auth/auth-client");
       await signOut();
+
+      console.log("✓ Logout successful");
+
+      // Redirect to home page (not login page)
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Logout failed";
       setError(message);
@@ -144,6 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signIn.social({
         provider,
       });
+
+      // Fetch JWT token after successful OAuth login
+      console.log("✓ OAuth login successful, fetching JWT token...");
+      const token = await refreshJwtToken();
+
+      if (token) {
+        console.log("✓ JWT token obtained for API authentication");
+      } else {
+        console.warn("⚠ Failed to obtain JWT token");
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "OAuth login failed";
       setError(message);

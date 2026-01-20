@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, CheckSquare } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getProfile } from "@/lib/storage/profile";
+import Link from "next/link";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -57,7 +58,19 @@ export function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="h-6 w-6" />
         </Button>
-        <h2 className="text-lg font-semibold lg:text-xl">Dashboard</h2>
+
+        {/* Todo App Logo - Links to Home Page */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          title="Go to Home"
+        >
+          <CheckSquare className="h-6 w-6 text-primary" />
+          <span className="hidden sm:inline text-lg font-semibold">Todo App</span>
+        </Link>
+
+        <div className="hidden lg:block h-6 w-px bg-border mx-2" />
+        <h2 className="hidden lg:block text-lg font-semibold lg:text-xl">Dashboard</h2>
       </div>
 
       <div className="flex items-center gap-4">
