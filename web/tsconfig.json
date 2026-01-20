@@ -18,8 +18,9 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",          // 🔹 baseUrl add kiya
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]      // 🔹 alias fix
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
