@@ -6,6 +6,15 @@ import path from "path";
 
 const handler = toNextJsHandler(auth);
 
+
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  password?: string;    // Optional: may not exist
+  providerId?: string;  // Optional: may not exist
+}
+
 export async function GET(request: NextRequest) {
   return handler.GET(request);
 }
@@ -61,7 +70,7 @@ export async function POST(request: NextRequest) {
           FROM user u
           LEFT JOIN account a ON u.id = a.userId
           WHERE u.email = ?
-        `).get(body.email);
+        `).get(body.email) as User | undefined;
 
         console.log("\n📊 DATABASE CHECK FOR USER");
         console.log("-".repeat(80));
