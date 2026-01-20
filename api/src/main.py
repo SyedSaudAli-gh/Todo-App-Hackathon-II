@@ -15,11 +15,14 @@ from src.middleware.error_handler import (
 # Initialize FastAPI app
 app = FastAPI(
     title="Todo Management API",
-    description="RESTful API for managing todo items in Phase II Todo Management feature",
+    description="RESTful API for managing todo items with JWT authentication (RS256). User identity extracted from 'sub' claim.",
     version="1.0.0",
     docs_url=f"/api/{settings.API_VERSION}/docs",
     redoc_url=f"/api/{settings.API_VERSION}/redoc",
     openapi_url=f"/api/{settings.API_VERSION}/openapi.json",
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    },
 )
 
 # Configure CORS
@@ -51,9 +54,11 @@ async def root():
 from src.routers.health import router as health_router
 app.include_router(health_router, prefix=f"/api/{settings.API_VERSION}", tags=["health"])
 
-# Register todos router
+# Register todos router at both paths for compatibility
 from src.routers.todos import router as todos_router
 app.include_router(todos_router, prefix=f"/api/{settings.API_VERSION}", tags=["todos"])
+# Specification-compliant path: /api/tasks (without version prefix)
+app.include_router(todos_router, prefix="/api", tags=["tasks"])
 
 # Register users router
 from src.routers.users import router as users_router

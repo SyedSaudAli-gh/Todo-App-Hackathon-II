@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
+    # JWT Authentication (RS256)
+    JWT_PUBLIC_KEY: str = ""  # RSA public key in PEM format from Better Auth
+    JWT_ALGORITHM: str = "RS256"
+
     # API Configuration
     API_VERSION: str = "v1"
     DEBUG: bool = False
