@@ -9,13 +9,10 @@
  * 2. Frontend calls /api/token to get JWT
  * 3. JWT is stored in memory/localStorage
  * 4. API client uses JWT for backend calls
- *
- * Note: This endpoint requires JWT_PRIVATE_KEY environment variable.
- * Better Auth itself works without JWT (uses cookies).
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth, loadPrivateKey } from "@/lib/auth/auth";
+import { auth, privateKey } from "@/lib/auth/auth";
 import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
@@ -29,22 +26,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
-      );
-    }
-
-    // Load private key (lazy-loaded, only when needed)
-    let privateKey: string;
-    try {
-      privateKey = loadPrivateKey();
-    } catch (error) {
-      console.error("Failed to load JWT private key:", error);
-      return NextResponse.json(
-        {
-          error: "JWT configuration error",
-          message: error instanceof Error ? error.message : "Failed to load private key",
-          hint: "Set JWT_PRIVATE_KEY environment variable to enable JWT token generation"
-        },
-        { status: 500 }
       );
     }
 
