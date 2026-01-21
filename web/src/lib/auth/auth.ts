@@ -2,20 +2,45 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import Database from "better-sqlite3";
 import path from "path";
-import fs from "fs";
 
 const dbPath = path.join(process.cwd(), "auth.db");
 
-// Load RSA private key for JWT signing
-const privateKeyPath = path.join(process.cwd(), "private_key.pem");
-let privateKey = "";
-try {
-  privateKey = fs.readFileSync(privateKeyPath, "utf8");
-  console.log("✓ Loaded RSA private key for JWT signing");
-} catch (error) {
-  console.error("ERROR: private_key.pem not found. JWT tokens will not be generated.");
-  throw error;
+/**
+ * Load RSA private key for JWT signing from environment variable.
+ *
+ * The private key should be stored in JWT_PRIVATE_KEY environment variable.
+ * If the key contains literal \n strings (common when copying from .env files),
+ * they will be converted to actual newlines.
+ *
+ * @throws Error if JWT_PRIVATE_KEY is not set or invalid
+ */
+function loadPrivateKey(): string {
+  const rawKey = process.env.JWT_PRIVATE_KEY;
+
+  if (!rawKey) {
+    throw new Error(
+      "JWT_PRIVATE_KEY environment variable is not set. " +
+      "Please set it to your RSA private key in PEM format. " +
+      "Generate one with: openssl genrsa -out private_key.pem 2048"
+    );
+  }
+
+  // Convert literal \n to actual newlines (common issue with .env files)
+  const privateKey = rawKey.replace(/\\n/g, "\n");
+
+  // Basic validation: check if it looks like a PEM key
+  if (!privateKey.includes("BEGIN") || !privateKey.includes("PRIVATE KEY")) {
+    throw new Error(
+      "JWT_PRIVATE_KEY does not appear to be a valid PEM-formatted private key. " +
+      "It should start with '-----BEGIN PRIVATE KEY-----' or '-----BEGIN RSA PRIVATE KEY-----'"
+    );
+  }
+
+  console.log("✓ Loaded RSA private key for JWT signing from environment variable");
+  return privateKey;
 }
+
+const privateKey = loadPrivateKey();
 
 export const auth = betterAuth({
   database: new Database(dbPath),

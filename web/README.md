@@ -264,11 +264,60 @@ try {
 
 ### Vercel (Recommended)
 
-1. Connect GitHub repository to Vercel
-2. Configure environment variables:
-   - `NEXT_PUBLIC_API_BASE_URL`: Your production API URL
-   - `NEXT_PUBLIC_API_VERSION`: v1
-3. Deploy automatically on push to main branch
+1. **Connect GitHub repository to Vercel**
+
+2. **Configure environment variables in Vercel Dashboard**:
+
+   Required variables:
+   - `NEXT_PUBLIC_API_BASE_URL`: Your production API URL (e.g., `https://api.yourdomain.com`)
+   - `NEXT_PUBLIC_API_VERSION`: `v1`
+   - `BETTER_AUTH_SECRET`: Generate with `openssl rand -base64 32`
+   - `BETTER_AUTH_URL`: Your production frontend URL (e.g., `https://yourdomain.com`)
+   - `JWT_PRIVATE_KEY`: Your RSA private key in PEM format (see below)
+
+   Optional OAuth variables:
+   - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+   - `FACEBOOK_APP_ID` and `FACEBOOK_APP_SECRET`
+   - `LINKEDIN_CLIENT_ID` and `LINKEDIN_CLIENT_SECRET`
+
+3. **Setting up JWT_PRIVATE_KEY on Vercel**:
+
+   The JWT private key must be stored as an environment variable (not a file) for Vercel deployment.
+
+   **Step 1: Generate RSA key pair** (if you don't have one):
+   ```bash
+   # Generate private key
+   openssl genrsa -out private_key.pem 2048
+
+   # Generate public key (for backend verification)
+   openssl rsa -in private_key.pem -pubout -out public_key.pem
+   ```
+
+   **Step 2: Convert private key to single-line format**:
+   ```bash
+   # On Linux/Mac:
+   awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' private_key.pem
+
+   # On Windows PowerShell:
+   (Get-Content private_key.pem -Raw) -replace "`r`n", "\n" -replace "`n", "\n"
+   ```
+
+   **Step 3: Add to Vercel**:
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Add new variable: `JWT_PRIVATE_KEY`
+   - Paste the entire key with `\n` for newlines:
+     ```
+     -----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQ...\n-----END PRIVATE KEY-----
+     ```
+   - Save and redeploy
+
+   **Important Notes**:
+   - The key must include `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----` markers
+   - Use `\n` (literal backslash-n) for line breaks, not actual newlines
+   - Keep the private key secret - never commit it to git
+   - Share the public key (`public_key.pem`) with your backend for JWT verification
+
+4. **Deploy**: Vercel will automatically deploy on push to main branch
 
 ### Manual Deployment
 
