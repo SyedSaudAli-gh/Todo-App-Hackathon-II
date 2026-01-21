@@ -12,16 +12,20 @@ const dbPath = path.join(process.cwd(), "auth.db");
  * If the key contains literal \n strings (common when copying from .env files),
  * they will be converted to actual newlines.
  *
+ * This function is lazy-loaded and only called when JWT tokens are needed.
+ * Better Auth itself works with cookies and doesn't require JWT.
+ *
  * @throws Error if JWT_PRIVATE_KEY is not set or invalid
  */
-function loadPrivateKey(): string {
+export function loadPrivateKey(): string {
   const rawKey = process.env.JWT_PRIVATE_KEY;
 
   if (!rawKey) {
     throw new Error(
       "JWT_PRIVATE_KEY environment variable is not set. " +
-      "Please set it to your RSA private key in PEM format. " +
-      "Generate one with: openssl genrsa -out private_key.pem 2048"
+      "This is required for generating JWT tokens for backend API authentication. " +
+      "Generate one with: openssl genrsa -out private_key.pem 2048\n" +
+      "Then add to .env.local: JWT_PRIVATE_KEY=\"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\""
     );
   }
 
@@ -40,14 +44,13 @@ function loadPrivateKey(): string {
   return privateKey;
 }
 
-const privateKey = loadPrivateKey();
-
+// Better Auth configuration
+// Note: JWT is NOT required for Better Auth to work - it uses cookie-based sessions
 export const auth = betterAuth({
   database: new Database(dbPath),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    // Explicitly configure password requirements
     minPasswordLength: 8,
     maxPasswordLength: 128,
   },
@@ -71,7 +74,6 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "",
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   plugins: [nextCookies()],
-  // Session configuration - cookies for UI
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -79,6 +81,3 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
-
-// Export private key for JWT generation in API routes
-export { privateKey };
