@@ -2,19 +2,19 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import Database from "better-sqlite3";
 import path from "path";
-import fs from "fs";
 
 const dbPath = path.join(process.cwd(), "auth.db");
 
-// Load RSA private key for JWT signing
-const privateKeyPath = path.join(process.cwd(), "private_key.pem");
-let privateKey = "";
-try {
-  privateKey = fs.readFileSync(privateKeyPath, "utf8");
-  console.log("✓ Loaded RSA private key for JWT signing");
-} catch (error) {
-  console.error("ERROR: private_key.pem not found. JWT tokens will not be generated.");
-  throw error;
+// Load RSA private key for JWT signing from environment variable
+// IMPORTANT: This must be a single-line string with \n escape sequences
+// Example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG...\n-----END PRIVATE KEY-----"
+const privateKey = process.env.JWT_PRIVATE_KEY || "";
+
+if (!privateKey) {
+  console.warn("⚠ JWT_PRIVATE_KEY not configured. JWT token generation will fail.");
+  console.warn("⚠ Set JWT_PRIVATE_KEY in .env.local to enable JWT authentication.");
+} else {
+  console.log("✓ JWT_PRIVATE_KEY loaded from environment variable");
 }
 
 export const auth = betterAuth({

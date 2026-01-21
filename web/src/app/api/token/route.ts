@@ -17,6 +17,15 @@ import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
   try {
+    // Verify JWT private key is configured
+    if (!privateKey) {
+      console.error("JWT_PRIVATE_KEY not configured in environment variables");
+      return NextResponse.json(
+        { error: "JWT authentication not configured" },
+        { status: 500 }
+      );
+    }
+
     // Get current session from Better Auth
     const session = await auth.api.getSession({
       headers: request.headers,

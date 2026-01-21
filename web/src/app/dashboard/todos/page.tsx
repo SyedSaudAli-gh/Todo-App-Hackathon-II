@@ -29,40 +29,17 @@ export default function TodosPage() {
     const loadTodos = async () => {
       try {
         setIsLoading(true);
-        console.log('📋 Loading todos...');
         const response = await listTodos();
         setTodos(response.todos);
-        console.log(`✅ Loaded ${response.todos.length} todos`);
       } catch (err) {
-        console.error('❌ Error loading todos:', err);
-
-        // Show error toast with helpful message
-        const errorMessage = err instanceof ApiError
-          ? err.message
-          : 'Failed to load todos';
-
-        toast({
-          title: "Failed to load todos",
-          description: errorMessage,
-          variant: "destructive",
-        });
-
-        // If it's an auth error, show additional help
-        if (err instanceof ApiError && err.status === 401) {
-          console.error('\n⚠️  AUTHENTICATION ERROR');
-          console.error('   Check the console logs above for JWT token fetch errors');
-          console.error('   Common causes:');
-          console.error('   1. JWT_PRIVATE_KEY environment variable not set');
-          console.error('   2. Better Auth session expired');
-          console.error('   3. Backend API is not running or unreachable\n');
-        }
+        console.error('Error loading todos:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadTodos();
-  }, [refreshTrigger, toast]);
+  }, [refreshTrigger]);
 
   // Apply filters
   const filteredTodos = todos.filter((todo) => {
