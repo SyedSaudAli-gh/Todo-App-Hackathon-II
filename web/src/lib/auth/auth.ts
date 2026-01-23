@@ -6,15 +6,21 @@ import path from "path";
 const dbPath = path.join(process.cwd(), "auth.db");
 
 // Load RSA private key for JWT signing from environment variable
-// IMPORTANT: This must be a single-line string with \n escape sequences
-// Example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG...\n-----END PRIVATE KEY-----"
-const privateKey = process.env.JWT_PRIVATE_KEY || "";
+// The key is stored as base64-encoded string to avoid newline issues in env vars
+const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
 
-if (!privateKey) {
+let privateKey = "";
+if (privateKeyBase64) {
+  try {
+    // Decode base64 to get the PEM-formatted private key
+    privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf-8');
+    console.log("✓ JWT_PRIVATE_KEY loaded and decoded from environment variable");
+  } catch (error) {
+    console.error("❌ Failed to decode JWT_PRIVATE_KEY:", error);
+  }
+} else {
   console.warn("⚠ JWT_PRIVATE_KEY not configured. JWT token generation will fail.");
   console.warn("⚠ Set JWT_PRIVATE_KEY in .env.local to enable JWT authentication.");
-} else {
-  console.log("✓ JWT_PRIVATE_KEY loaded from environment variable");
 }
 
 export const auth = betterAuth({
