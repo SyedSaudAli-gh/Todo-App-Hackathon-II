@@ -70,19 +70,34 @@ def calculate_completion_rate(total: int, completed: int) -> float:
     return round(rate, 1)
 
 
-def calculate_active_days(user_created_at: str) -> int:
+def calculate_active_days(session: Session, user_id: str, user_created_at: str = None) -> int:
     """
     Calculate number of days since user account creation (inclusive).
 
+    If user_created_at is not provided, calculates from the earliest todo creation date.
+
     Args:
-        user_created_at: User creation timestamp (ISO format from Better Auth)
+        session: Database session
+        user_id: User identifier from Better Auth
+        user_created_at: User creation timestamp (ISO format from Better Auth), optional
 
     Returns:
         int: Number of active days (minimum 1 for today)
     """
     try:
-        # Parse ISO timestamp from Better Auth
-        created_at_dt = datetime.fromisoformat(user_created_at.replace('Z', '+00:00'))
+        # If user_created_at is provided, use it
+        if user_created_at:
+            created_at_dt = datetime.fromisoformat(user_created_at.replace('Z', '+00:00'))
+        else:
+            # Fallback: use earliest todo creation date
+            stmt = select(func.min(Todo.created_at)).where(Todo.user_id == user_id)
+            earliest_todo = session.exec(stmt).one()
+
+            if earliest_todo:
+                created_at_dt = earliest_todo
+            else:
+                # No todos yet, return 1 (today)
+                return 1
 
         # Ensure timezone-aware datetime
         if created_at_dt.tzinfo is None:
@@ -100,10 +115,11 @@ def calculate_active_days(user_created_at: str) -> int:
 
     except (ValueError, AttributeError) as e:
         # If timestamp parsing fails, return 1 as safe default
+        logger.warning(f"Failed to calculate active days: {str(e)}")
         return 1
 
 
-def get_user_stats_optimized(session: Session, user_id: str, user_created_at: str) -> Dict[str, any]:
+def get_user_stats_optimized(session: Session, user_id: str, user_created_at: str = None) -> Dict[str, any]:
     """
     Calculate all user statistics using optimized single aggregation query.
 
@@ -143,7 +159,7 @@ def get_user_stats_optimized(session: Session, user_id: str, user_created_at: st
         completion_rate = calculate_completion_rate(total_tasks, completed_tasks)
 
         # Calculate active days
-        active_days = calculate_active_days(user_created_at)
+        active_days = calculate_active_days(session, user_id, user_created_at)
 
         logger.info(f"Statistics calculated successfully: total={total_tasks}, completed={completed_tasks}, rate={completion_rate}%, days={active_days}")
 
@@ -160,7 +176,7 @@ def get_user_stats_optimized(session: Session, user_id: str, user_created_at: st
         raise Exception(f"Failed to calculate user statistics: {str(e)}")
 
 
-def get_user_stats(session: Session, user_id: str, user_created_at: str) -> Dict[str, any]:
+def get_user_stats(session: Session, user_id: str, user_created_at: str = None) -> Dict[str, any]:
     """
     Calculate all user statistics (orchestration function).
 

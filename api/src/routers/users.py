@@ -8,7 +8,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import Session
 from src.database import get_session
-from src.middleware.auth import get_current_user
+from src.dependencies import get_current_user_id
 from src.services.stats_service import get_user_stats
 from src.schemas.user_stats import UserStatsResponse
 
@@ -94,7 +94,7 @@ router = APIRouter()
 async def get_current_user_stats(
     request: Request,
     session: Session = Depends(get_session),
-    user_info: dict = Depends(get_current_user)
+    user_id: str = Depends(get_current_user_id)
 ) -> UserStatsResponse:
     """
     Get statistics for the authenticated user.
@@ -102,7 +102,7 @@ async def get_current_user_stats(
     Args:
         request: FastAPI request object
         session: Database session (injected)
-        user_info: Authenticated user information (injected)
+        user_id: Authenticated user ID from JWT (injected)
 
     Returns:
         UserStatsResponse: User activity statistics
@@ -111,9 +111,9 @@ async def get_current_user_stats(
         HTTPException: 401 if not authenticated, 500 if calculation fails
     """
     try:
-        # Extract user information from auth dependency
-        user_id = user_info["user_id"]
-        user_created_at = user_info["created_at"]
+        # Note: user_created_at is not available from JWT, so we'll use None
+        # The stats service should handle this gracefully
+        user_created_at = None
 
         # Calculate statistics using stats service
         stats = get_user_stats(session, user_id, user_created_at)
