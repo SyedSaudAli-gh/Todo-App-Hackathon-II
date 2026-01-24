@@ -1,291 +1,147 @@
-# 🔥 PRODUCTION FIX: "Invalid origin" & "Failed to fetch" Errors
+# 🔧 Production Authentication Fix Guide
 
-## 🎯 Problem Summary
+## Problem Summary
+- ✅ Deployment successful
+- ❌ Sign up fails with: "Failed to execute 'json' on 'Response': Unexpected end of JSON input"
+- ❌ OAuth buttons show "Connecting..." but don't work
+- ❌ Server returns 500 Internal Server Error with empty response
 
-**Symptoms:**
-- ❌ Email sign-up/login fails with "Invalid origin" error
-- ❌ "Failed to fetch" errors in browser console
-- ❌ OAuth (Google/Facebook) redirects fail
-
-**Root Cause:**
-URL mismatch between actual production deployment and configured environment variables.
-
-- **Actual Production URL**: `https://todo-app-hackathon-ii.vercel.app`
-- **Configured URL (WRONG)**: `https://todo-app-hackathon-9pgjbsgqq-syedsaudali-ghs-projects.vercel.app`
+## Root Cause
+**Better Auth database tables don't exist in Supabase PostgreSQL database.**
 
 ---
 
-## ✅ SOLUTION: 3-Step Fix
+## 🚨 CRITICAL FIX - Step 1: Initialize Database Tables
 
-### Step 1: Update Vercel Environment Variables
+### 1.1 Go to Supabase Dashboard
+1. Open https://supabase.com/dashboard
+2. Select your project: `faixxdifbqxallkxlydd`
+3. Click on **SQL Editor** in the left sidebar
 
-Go to your Vercel project settings: https://vercel.com/syedsaudali-ghs-projects/todo-app-hackathon-ii/settings/environment-variables
+### 1.2 Run the Database Initialization Script
+1. Click **"New Query"**
+2. Copy the entire contents of `web/scripts/init-better-auth-db.sql`
+3. Paste into the SQL editor
+4. Click **"Run"** or press `Ctrl+Enter`
 
-**Update/Add these environment variables:**
-
-```bash
-# API Configuration
-NEXT_PUBLIC_API_BASE_URL=https://syedsaudali-todo-backend-api.hf.space
-NEXT_PUBLIC_API_VERSION=v1
-
-# Better Auth - CRITICAL: Use correct production URL
-BETTER_AUTH_SECRET=Z1A0Fj2lifbHe9raL02CWGjZVhmt027/NlZ77hGebMQ=
-BETTER_AUTH_URL=https://todo-app-hackathon-ii.vercel.app
-DATABASE_URL=file:auth.db
-
-# JWT Private Key (copy from your local .env.local - including quotes and \n)
-JWT_PRIVATE_KEY=<your-jwt-private-key-here>
-
-# Google OAuth (copy from your local .env.local)
-GOOGLE_CLIENT_ID=<your-google-client-id>
-GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-
-# Facebook OAuth (copy from your local .env.local)
-FACEBOOK_APP_ID=<your-facebook-app-id>
-FACEBOOK_APP_SECRET=<your-facebook-app-secret>
-
-# App URL - CRITICAL: Use correct production URL
-NEXT_PUBLIC_APP_URL=https://todo-app-hackathon-ii.vercel.app
+### 1.3 Verify Tables Were Created
+You should see output showing 4 tables created:
+```
+table_name    | column_count
+--------------+-------------
+account       | 11
+session       | 8
+user          | 6
+verification  | 5
 ```
 
-**Important Notes:**
-- Set environment for: **Production**, **Preview**, and **Development**
-- After updating, trigger a new deployment (or push a commit)
+If you see this output, **the database is ready!** ✅
 
 ---
 
-### Step 2: Update Hugging Face Space Environment Variables
+## 🔧 Step 2: Verify Vercel Environment Variables
 
-Go to your Hugging Face Space settings:
-https://huggingface.co/spaces/syedsaudali/todo-backend-api/settings
+Go to your Vercel project settings and verify these variables are set correctly.
 
-**Update this environment variable:**
+### ⚠️ Critical Variables to Check:
 
-```bash
-CORS_ORIGINS=https://todo-app-hackathon-ii.vercel.app
-```
+1. **BETTER_AUTH_URL** = `https://todo-app-hackathon-ii.vercel.app` (NOT localhost)
+2. **NEXT_PUBLIC_APP_URL** = `https://todo-app-hackathon-ii.vercel.app` (NOT localhost)
+3. **DATABASE_URL** = Your Supabase connection string (with `%25` for `%` in password)
 
-**After updating:**
-- Click "Restart Space" to apply changes
-- Wait for the space to rebuild (2-3 minutes)
+### Common Mistakes:
+- ❌ Using `http://localhost:3000` in production
+- ❌ Missing `%25` encoding in DATABASE_URL password
+- ❌ BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL don't match
 
 ---
 
-### Step 3: Update OAuth Redirect URLs
+## 🔧 Step 3: Configure OAuth Redirect URIs
 
-#### 3a. Google OAuth Console
-
-1. Go to: https://console.cloud.google.com/apis/credentials
-2. Select your OAuth 2.0 Client ID
-3. Under **Authorized redirect URIs**, add:
+### Google OAuth Console
+1. Go to https://console.cloud.google.com/
+2. Navigate to: **APIs & Services → Credentials**
+3. Edit your OAuth 2.0 Client ID
+4. Add redirect URI:
    ```
    https://todo-app-hackathon-ii.vercel.app/api/auth/callback/google
    ```
-4. **Remove** the old URL:
-   ```
-   https://todo-app-hackathon-9pgjbsgqq-syedsaudali-ghs-projects.vercel.app/api/auth/callback/google
-   ```
 5. Click **Save**
 
-#### 3b. Facebook Developer Console
-
-1. Go to: https://developers.facebook.com/apps (select your app)
-2. Navigate to: **Facebook Login** → **Settings**
-3. Under **Valid OAuth Redirect URIs**, add:
+### Facebook App Dashboard
+1. Go to https://developers.facebook.com/
+2. Navigate to: **Facebook Login → Settings**
+3. Add redirect URI:
    ```
    https://todo-app-hackathon-ii.vercel.app/api/auth/callback/facebook
    ```
-4. **Remove** the old URL:
-   ```
-   https://todo-app-hackathon-9pgjbsgqq-syedsaudali-ghs-projects.vercel.app/api/auth/callback/facebook
-   ```
-5. Click **Save Changes**
+4. Click **Save Changes**
 
 ---
 
-## 🧪 Testing & Verification
+## 🚀 Step 4: Redeploy on Vercel
 
-After completing all 3 steps, test the following:
+1. Go to Vercel Dashboard → Your Project
+2. Click **"Deployments"** tab
+3. Click **"..."** menu on latest deployment
+4. Click **"Redeploy"**
+5. Wait for completion (~2-3 minutes)
 
-### 1. Email/Password Authentication
-```
-URL: https://todo-app-hackathon-ii.vercel.app/login
-```
-- ✅ Sign up with new email should work
-- ✅ Login with existing credentials should work
-- ✅ No "Invalid origin" errors
-- ✅ No "Failed to fetch" errors
+---
 
-### 2. Google OAuth
-```
-URL: https://todo-app-hackathon-ii.vercel.app/login
-```
-- ✅ Click "Sign in with Google"
-- ✅ Should redirect to Google login
-- ✅ After authentication, should redirect back to dashboard
-- ✅ User should be logged in
+## ✅ Step 5: Test Authentication
 
-### 3. Facebook OAuth
-```
-URL: https://todo-app-hackathon-ii.vercel.app/login
-```
-- ✅ Click "Sign in with Facebook"
-- ✅ Should redirect to Facebook login
-- ✅ After authentication, should redirect back to dashboard
-- ✅ User should be logged in
+### Test Signup:
+1. Visit: https://todo-app-hackathon-ii.vercel.app/signup
+2. Create account with email/password
+3. **Expected**: Redirect to dashboard ✅
 
-### 4. API Communication
-Open browser DevTools (F12) → Network tab:
-- ✅ API calls should go to: `https://syedsaudali-todo-backend-api.hf.space/api/v1/...`
-- ✅ No CORS errors
-- ✅ Requests should return 200 OK (or appropriate status codes)
+### Test Login:
+1. Visit: https://todo-app-hackathon-ii.vercel.app/login
+2. Login with credentials
+3. **Expected**: Redirect to dashboard ✅
 
-### 5. Session Persistence
-- ✅ Refresh the page → should remain logged in
-- ✅ Close and reopen browser → should remain logged in (within 7 days)
-- ✅ Todos should load correctly
+### Test OAuth:
+1. Click "Sign in with Google" or "Sign in with Facebook"
+2. Complete OAuth flow
+3. **Expected**: Redirect to dashboard ✅
 
 ---
 
 ## 🔍 Troubleshooting
 
-### Still seeing "Invalid origin" error?
+### Check Vercel Logs:
+1. Vercel Dashboard → Your Project → **Logs**
+2. Look for errors about:
+   - "relation does not exist" → Run SQL script (Step 1)
+   - "Invalid origin" → Check BETTER_AUTH_URL (Step 2)
+   - "Failed to connect" → Check DATABASE_URL (Step 2)
 
-**Check:**
-1. Verify `BETTER_AUTH_URL` in Vercel matches exactly: `https://todo-app-hackathon-ii.vercel.app`
-2. Ensure you triggered a new deployment after updating environment variables
-3. Clear browser cache and cookies
-4. Try in incognito/private browsing mode
-
-**Debug:**
-```bash
-# Check Vercel deployment logs
-vercel logs <deployment-url>
+### Expected Success Logs:
 ```
-
-### Still seeing "Failed to fetch" error?
-
-**Check:**
-1. Verify backend is running: https://syedsaudali-todo-backend-api.hf.space/
-2. Check CORS configuration on Hugging Face Space
-3. Verify `CORS_ORIGINS` includes: `https://todo-app-hackathon-ii.vercel.app`
-4. Ensure Hugging Face Space has been restarted after env var changes
-
-**Debug:**
-```bash
-# Test backend health
-curl https://syedsaudali-todo-backend-api.hf.space/api/v1/health
-```
-
-### OAuth not working?
-
-**Check:**
-1. Verify redirect URLs in Google/Facebook consoles match exactly
-2. No trailing slashes in redirect URLs
-3. OAuth credentials are set in Vercel environment variables
-4. Try revoking app access and re-authenticating
-
-**Debug:**
-- Check browser console for redirect errors
-- Verify OAuth callback URL in network tab
-
-### JWT Token Issues?
-
-**Check:**
-1. `JWT_PRIVATE_KEY` is set in Vercel (with escaped newlines `\n`)
-2. `JWT_PUBLIC_KEY` is set in Hugging Face Space
-3. Keys are properly formatted PEM strings
-4. Keys match (public key derived from private key)
-
-**Debug:**
-```bash
-# Verify JWT token structure
-# In browser console after login:
-console.log(document.cookie)
+✓ JWT_PRIVATE_KEY loaded
+Environment variables check:
+  DATABASE_URL: ✓
+  BETTER_AUTH_SECRET: ✓
+  JWT_PRIVATE_KEY: ✓
+  NEXT_PUBLIC_APP_URL: ✓
 ```
 
 ---
 
-## 📋 Deployment Checklist
+## 🎯 Quick Checklist
 
-- [ ] Updated Vercel environment variables
-- [ ] Triggered new Vercel deployment
-- [ ] Updated Hugging Face Space environment variables
-- [ ] Restarted Hugging Face Space
-- [ ] Updated Google OAuth redirect URLs
-- [ ] Updated Facebook OAuth redirect URLs
-- [ ] Tested email/password login
-- [ ] Tested Google OAuth
-- [ ] Tested Facebook OAuth
-- [ ] Verified API calls work
-- [ ] Verified session persistence
-- [ ] Checked browser console for errors
-- [ ] Tested in incognito mode
+- [ ] Run SQL script in Supabase SQL Editor
+- [ ] Verify 4 tables created (user, session, account, verification)
+- [ ] Check BETTER_AUTH_URL = production URL (not localhost)
+- [ ] Check NEXT_PUBLIC_APP_URL = production URL (not localhost)
+- [ ] Configure Google OAuth redirect URI
+- [ ] Configure Facebook OAuth redirect URI
+- [ ] Redeploy on Vercel
+- [ ] Test signup
+- [ ] Test login
+- [ ] Test OAuth
 
 ---
 
-## 🎉 Expected Result
-
-After completing all steps:
-- ✅ Email sign-up/login works without errors
-- ✅ Google OAuth works seamlessly
-- ✅ Facebook OAuth works seamlessly
-- ✅ API calls succeed without CORS errors
-- ✅ Sessions persist across page refreshes
-- ✅ No "Invalid origin" errors
-- ✅ No "Failed to fetch" errors
-
----
-
-## 📝 Technical Details
-
-### Why This Happened
-
-Vercel generates multiple URLs for deployments:
-- **Production URL**: `https://todo-app-hackathon-ii.vercel.app` (custom/project domain)
-- **Preview URLs**: `https://todo-app-hackathon-ii-<hash>.vercel.app` (per-deployment)
-- **Legacy URLs**: `https://todo-app-hackathon-9pgjbsgqq-syedsaudali-ghs-projects.vercel.app`
-
-Better Auth validates requests against the configured `BETTER_AUTH_URL`. When requests come from a different origin, it rejects them with "Invalid origin" error.
-
-### Security Implications
-
-- Better Auth's origin validation is a security feature (prevents CSRF attacks)
-- CORS configuration on backend prevents unauthorized cross-origin requests
-- OAuth redirect URL validation prevents token theft
-
-### Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Browser (https://todo-app-hackathon-ii.vercel.app)        │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ├─► Better Auth (Cookie-based sessions)
-                 │   - Email/Password authentication
-                 │   - OAuth (Google, Facebook)
-                 │   - Session management
-                 │
-                 └─► FastAPI Backend (https://syedsaudali-todo-backend-api.hf.space)
-                     - JWT validation (RS256)
-                     - Todo CRUD operations
-                     - PostgreSQL database
-```
-
----
-
-## 🆘 Need Help?
-
-If you're still experiencing issues after following this guide:
-
-1. Check Vercel deployment logs
-2. Check Hugging Face Space logs
-3. Check browser console for detailed error messages
-4. Verify all environment variables are set correctly
-5. Ensure all services have been restarted/redeployed
-
-**Common mistakes:**
-- Forgetting to redeploy after updating environment variables
-- Typos in URLs (trailing slashes, http vs https)
-- Not restarting Hugging Face Space after env var changes
-- OAuth redirect URLs don't match exactly
+**Most Common Issue**: Database tables not created. Always start with Step 1!
