@@ -1,19 +1,8 @@
 import { auth } from "@/lib/auth/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 import { NextRequest } from "next/server";
-import Database from "better-sqlite3";
-import path from "path";
 
 const handler = toNextJsHandler(auth);
-
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  password?: string;    // Optional: may not exist
-  providerId?: string;  // Optional: may not exist
-}
 
 export async function GET(request: NextRequest) {
   return handler.GET(request);
@@ -59,49 +48,6 @@ export async function POST(request: NextRequest) {
       console.log("Password length:", body.password?.length || 0);
       console.log("Password exists:", !!body.password);
       console.log("Password type:", typeof body.password);
-
-      // CHECK DATABASE FOR THIS USER
-      try {
-        const dbPath = path.join(process.cwd(), "auth.db");
-        const db = new Database(dbPath);
-
-        const user = db.prepare(`
-          SELECT u.id, u.email, u.name, a.password, a.providerId
-          FROM user u
-          LEFT JOIN account a ON u.id = a.userId
-          WHERE u.email = ?
-        `).get(body.email) as User | undefined;
-
-        console.log("\n📊 DATABASE CHECK FOR USER");
-        console.log("-".repeat(80));
-        if (user) {
-          console.log("✅ User found in database");
-          console.log("User ID:", user.id);
-          console.log("User email:", user.email);
-          console.log("User name:", user.name);
-          console.log("Provider ID:", user.providerId);
-          console.log("Hashed password exists:", !!user.password);
-          console.log("Hashed password length:", user.password?.length || 0);
-
-          if (user.password) {
-            const parts = user.password.split(':');
-            console.log("Password format:", parts.length === 2 ? "salt:hash (CORRECT)" : "INVALID FORMAT");
-            if (parts.length === 2) {
-              console.log("Salt length:", parts[0].length);
-              console.log("Hash length:", parts[1].length);
-            }
-          } else {
-            console.log("❌ WARNING: No password stored for this user!");
-          }
-        } else {
-          console.log("❌ User NOT found in database");
-          console.log("Email searched:", body.email);
-        }
-
-        db.close();
-      } catch (dbError) {
-        console.log("❌ Database check failed:", dbError);
-      }
     }
 
     console.log("=".repeat(80) + "\n");
