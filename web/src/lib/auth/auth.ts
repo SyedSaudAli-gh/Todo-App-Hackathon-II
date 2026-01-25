@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 
 // Load RSA private key for JWT signing from environment variable
@@ -32,15 +33,19 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
-// Create PostgreSQL connection pool
-// Better Auth expects a Pool object with a "connect" method
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 10,
+// Create Kysely database instance with PostgreSQL dialect
+// Better Auth requires Kysely for proper database operations
+const db = new Kysely({
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 10,
+    }),
+  }),
 });
 
 export const auth = betterAuth({
-  database: pool,
+  database: db,
   trustedOrigins: [
     "http://localhost:3000",
     "https://todo-app-hackathon-ii.vercel.app",
