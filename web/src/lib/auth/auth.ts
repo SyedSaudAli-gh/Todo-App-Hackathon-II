@@ -1,4 +1,6 @@
 import { betterAuth } from "better-auth";
+import { Kysely, PostgresDialect } from "kysely";
+import { Pool } from "pg";
 
 // Load RSA private key for JWT signing
 const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
@@ -11,14 +13,33 @@ if (privateKeyBase64) {
   }
 }
 
-// Simplest possible Better Auth configuration
-export const auth = betterAuth({
-  database: process.env.DATABASE_URL!,
-  secret: process.env.BETTER_AUTH_SECRET!,
-  emailAndPassword: {
-    enabled: true,
-  },
+// Create Kysely database instance - Better Auth v1.4.17 requires this
+const db = new Kysely({
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      connectionString: process.env.DATABASE_URL!,
+    }),
+  }),
 });
 
+console.log("🔍 Initializing Better Auth with Kysely...");
+
+try {
+  // Better Auth configuration with Kysely instance
+  var auth = betterAuth({
+    database: db,
+    secret: process.env.BETTER_AUTH_SECRET!,
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
+    },
+  });
+  console.log("✅ Better Auth initialized successfully");
+} catch (error) {
+  console.error("❌ Better Auth initialization failed:", error);
+  throw error;
+}
+
+export { auth };
 export type Session = typeof auth.$Infer.Session;
 export { privateKey };
