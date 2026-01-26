@@ -12,19 +12,13 @@ export const oauthProviders: OAuthProviderConfig[] = [
     id: "google",
     name: "Google",
     icon: "google",
-    enabled: !!process.env.NEXT_PUBLIC_GOOGLE_ENABLED,
+    enabled: !!(process.env.NEXT_PUBLIC_GOOGLE_ENABLED === 'true' && typeof window !== 'undefined'),
   },
   {
     id: "facebook",
     name: "Facebook",
     icon: "facebook",
-    enabled: !!process.env.NEXT_PUBLIC_FACEBOOK_ENABLED,
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: "linkedin",
-    enabled: !!process.env.NEXT_PUBLIC_LINKEDIN_ENABLED,
+    enabled: !!(process.env.NEXT_PUBLIC_FACEBOOK_ENABLED === 'true' && typeof window !== 'undefined'),
   },
 ];
 

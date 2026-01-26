@@ -18,7 +18,6 @@ if (privateKeyBase64) {
 const requiredEnvVars = {
   DATABASE_URL: process.env.DATABASE_URL,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-  JWT_PRIVATE_KEY: process.env.JWT_PRIVATE_KEY,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 };
 
@@ -31,16 +30,20 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
+if (!process.env.BETTER_AUTH_SECRET) {
+  throw new Error("BETTER_AUTH_SECRET is required");
+}
+
 export const auth = betterAuth({
-  database: process.env.DATABASE_URL,
+  database: process.env.DATABASE_URL || "file:auth.db",
   trustedOrigins: [
     "http://localhost:3000",
     "https://todo-app-hackathon-ii.vercel.app",
-  ],
+    process.env.NEXT_PUBLIC_APP_URL || "",
+  ].filter(Boolean),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    // Explicitly configure password requirements
     minPasswordLength: 8,
     maxPasswordLength: 128,
   },
@@ -48,26 +51,29 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      enabled: !!process.env.GOOGLE_CLIENT_ID,
+      enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      redirectURI: `${process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/auth/callback/google`,
     },
     facebook: {
       clientId: process.env.FACEBOOK_APP_ID || "",
       clientSecret: process.env.FACEBOOK_APP_SECRET || "",
-      enabled: !!process.env.FACEBOOK_APP_ID,
-    },
-    linkedin: {
-      clientId: process.env.LINKEDIN_CLIENT_ID || "",
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET || "",
-      enabled: !!process.env.LINKEDIN_CLIENT_ID,
+      enabled: !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET),
+      redirectURI: `${process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/auth/callback/facebook`,
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET || "",
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: process.env.BETTER_AUTH_SECRET || "fallback-secret-for-development-only",
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
   plugins: [nextCookies()],
-  // Session configuration - cookies for UI
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
+  },
+  // Add error handling for production
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+    },
   },
 });
 
