@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import postgres from "postgres";
 
 // Load RSA private key for JWT signing from environment variable
 const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
@@ -32,16 +31,11 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
-// Create PostgreSQL connection using postgres library
-// Better Auth works well with the postgres library for Supabase
-const sql = postgres(process.env.DATABASE_URL!, {
-  max: 10,
-  idle_timeout: 30,
-  connect_timeout: 10,
-});
-
 export const auth = betterAuth({
-  database: sql,
+  database: {
+    provider: "postgres",
+    url: process.env.DATABASE_URL,
+  },
   trustedOrigins: [
     "http://localhost:3000",
     "https://todo-app-hackathon-ii.vercel.app",
