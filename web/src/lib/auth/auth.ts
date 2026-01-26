@@ -1,16 +1,18 @@
 import { betterAuth } from "better-auth";
+import { Pool } from "pg";
 
-console.log("🔍 Minimal Better Auth initialization...");
+console.log("🔍 Better Auth initialization with explicit pg adapter...");
+
+// Create pg Pool explicitly for Better Auth
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+});
 
 export const auth = betterAuth({
-  database: process.env.DATABASE_URL!,
+  database: pool,
   secret: process.env.BETTER_AUTH_SECRET!,
   emailAndPassword: {
     enabled: true,
-  },
-  advanced: {
-    generateId: false,
-    disableCSRFCheck: false,
   },
 });
 
