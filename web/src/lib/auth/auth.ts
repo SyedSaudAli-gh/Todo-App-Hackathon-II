@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { Kysely, PostgresDialect } from "kysely";
-import { Pool } from "pg";
+import postgres from "postgres";
 
 // Load RSA private key for JWT signing from environment variable
 const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
@@ -33,22 +32,16 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
-// Create Kysely database instance with PostgreSQL dialect
-// Better Auth requires Kysely for proper database operations
-// Using Session Pooler configuration for Supabase
-const db = new Kysely({
-  dialect: new PostgresDialect({
-    pool: new Pool({
-      connectionString: process.env.DATABASE_URL,
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    }),
-  }),
+// Create PostgreSQL connection using postgres library
+// Better Auth works well with the postgres library for Supabase
+const sql = postgres(process.env.DATABASE_URL!, {
+  max: 10,
+  idle_timeout: 30,
+  connect_timeout: 10,
 });
 
 export const auth = betterAuth({
-  database: db,
+  database: sql,
   trustedOrigins: [
     "http://localhost:3000",
     "https://todo-app-hackathon-ii.vercel.app",
