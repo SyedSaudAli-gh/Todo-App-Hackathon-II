@@ -1,9 +1,7 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
-console.log("🔍 Better Auth initialization with explicit pg adapter...");
-console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-console.log("BETTER_AUTH_SECRET exists:", !!process.env.BETTER_AUTH_SECRET);
+console.log("🔍 Auth module loaded");
 
 // Load RSA private key for JWT signing from environment variable
 const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
@@ -18,24 +16,44 @@ if (privateKeyBase64) {
   }
 }
 
-// Create pg Pool explicitly for Better Auth
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL!,
+// Lazy initialization - only create auth instance when first accessed
+let authInstance: ReturnType<typeof betterAuth> | null = null;
+
+function getAuth() {
+  if (authInstance) {
+    return authInstance;
+  }
+
+  console.log("🔍 Initializing Better Auth (lazy)...");
+  console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("BETTER_AUTH_SECRET exists:", !!process.env.BETTER_AUTH_SECRET);
+
+  // Create pg Pool
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL!,
+  });
+
+  authInstance = betterAuth({
+    database: pool,
+    secret: process.env.BETTER_AUTH_SECRET!,
+    emailAndPassword: {
+      enabled: true,
+    },
+  });
+
+  console.log("✅ Better Auth initialized successfully");
+  return authInstance;
+}
+
+// Export a proxy that lazily initializes
+export const auth = new Proxy({} as ReturnType<typeof betterAuth>, {
+  get(target, prop) {
+    const instance = getAuth();
+    return (instance as any)[prop];
+  }
 });
 
-console.log("Initializing Better Auth...");
-
-export const auth = betterAuth({
-  database: pool,
-  secret: process.env.BETTER_AUTH_SECRET!,
-  emailAndPassword: {
-    enabled: true,
-  },
-});
-
-console.log("✅ Better Auth initialized successfully");
-
-export type Session = typeof auth.$Infer.Session;
+export type Session = ReturnType<typeof betterAuth>['$Infer']['Session'];
 
 // Export private key for JWT generation in API routes
 export { privateKey };
