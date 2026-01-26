@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "next-auth/react";
 import { refreshJwtToken, clearJwtToken } from "@/lib/auth/jwt-manager";
 import type { AuthState, User, Session } from "@/types/auth";
 
@@ -15,15 +15,15 @@ interface AuthContextValue extends AuthState {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: sessionData, isPending, error: sessionError } = useSession();
+  const { data: sessionData, status } = useSession();
   const [error, setError] = useState<string | null>(null);
 
   const authState: AuthState = {
     user: sessionData?.user as User | null,
-    session: sessionData?.session as Session | null,
-    isLoading: isPending,
-    isAuthenticated: !!sessionData?.user,
-    error: error || (sessionError ? String(sessionError) : null),
+    session: sessionData as Session | null,
+    isLoading: status === "loading",
+    isAuthenticated: status === "authenticated",
+    error: error,
   };
 
   const login = async (email: string, password: string) => {
@@ -32,18 +32,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("🔐 Login attempt:", email);
 
-      const { signIn } = await import("@/lib/auth/auth-client");
+      const { signIn } = await import("next-auth/react");
 
-      const payload = {
+      const result = await signIn("credentials", {
         email,
         password,
-      };
-
-      const result = await signIn.email(payload);
+        redirect: false,
+      });
 
       // Check for errors in result
-      if (result && result.error) {
-        throw new Error(result.error.message || "Login failed");
+      if (result?.error) {
+        throw new Error(result.error || "Login failed");
       }
 
       // Fetch JWT token after successful login
@@ -79,19 +78,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("📝 Signup attempt:", { email, name });
-      const { signUp } = await import("@/lib/auth/auth-client");
 
-      // Ensure payload matches Better Auth contract exactly
-      const payload = {
-        name: name.trim(),
+      // Step 1: Create user account
+      const signupResponse = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password: password,
+        })
+      });
+
+      if (!signupResponse.ok) {
+        const errorData = await signupResponse.json();
+        throw new Error(errorData.error || "Signup failed");
+      }
+
+      // Step 2: Sign in with NextAuth
+      const { signIn } = await import("next-auth/react");
+      const result = await signIn("credentials", {
         email: email.trim().toLowerCase(),
         password: password,
-      };
+        redirect: false,
+      });
 
-      const result = await signUp.email(payload);
-
-      if (result.error) {
-        throw new Error(result.error.message || "Signup failed");
+      if (result?.error) {
+        throw new Error("Account created but login failed. Please try logging in.");
       }
 
       // Fetch JWT token after successful signup
@@ -119,9 +132,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearJwtToken();
       console.log("✓ JWT token cache cleared");
 
-      // Then sign out from Better Auth
-      const { signOut } = await import("@/lib/auth/auth-client");
-      await signOut();
+      // Then sign out from NextAuth
+      const { signOut } = await import("next-auth/react");
+      await signOut({ redirect: false });
 
       console.log("✓ Logout successful");
 
@@ -139,9 +152,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithOAuth = async (provider: "google" | "facebook" | "linkedin") => {
     try {
       setError(null);
-      const { signIn } = await import("@/lib/auth/auth-client");
-      await signIn.social({
-        provider,
+      const { signIn } = await import("next-auth/react");
+      await signIn(provider, {
+        callbackUrl: "/dashboard",
       });
 
       // Fetch JWT token after successful OAuth login

@@ -51,13 +51,12 @@ export function OAuthButton({ provider, disabled, onError }: OAuthButtonProps) {
   const handleOAuthLogin = async () => {
     setLoading(true);
     try {
-      // Import Better Auth client
-      const { signIn } = await import("@/lib/auth/auth-client");
+      // Use NextAuth for OAuth
+      const { signIn } = await import("next-auth/react");
 
       // Trigger OAuth flow
-      await signIn.social({
-        provider,
-        callbackURL: "/dashboard", // Redirect to dashboard after successful login
+      await signIn(provider, {
+        callbackUrl: "/dashboard", // Redirect to dashboard after successful login
       });
 
       // Note: The OAuth flow will redirect the user, so we won't reach here

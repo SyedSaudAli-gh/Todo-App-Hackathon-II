@@ -51,10 +51,8 @@ export default function SignUpPage() {
     setError(null);
 
     try {
-      // Log payload before sending (for debugging)
-      console.log("Signup payload:", { name: data.name, email: data.email, password: "***" });
-
-      const response = await fetch("/api/auth/sign-up/email", {
+      // Step 1: Create user account
+      const signupResponse = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,9 +62,21 @@ export default function SignUpPage() {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Sign up failed");
+      if (!signupResponse.ok) {
+        const errorData = await signupResponse.json();
+        throw new Error(errorData.error || "Sign up failed");
+      }
+
+      // Step 2: Sign in with NextAuth
+      const { signIn } = await import("next-auth/react");
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error("Account created but login failed. Please try logging in.");
       }
 
       // Success - redirect to dashboard

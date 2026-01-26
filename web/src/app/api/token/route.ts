@@ -1,24 +1,25 @@
 /**
  * JWT Token Generation API Route
  *
- * This endpoint generates a JWT token from the current Better Auth session.
+ * This endpoint generates a JWT token from the current NextAuth session.
  * The JWT token is used for authenticating API calls to the backend.
  *
  * Flow:
- * 1. User logs in via Better Auth (session cookie set)
+ * 1. User logs in via NextAuth (session cookie set)
  * 2. Frontend calls /api/token to get JWT
  * 3. JWT is stored in memory/localStorage
  * 4. API client uses JWT for backend calls
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth, privateKey } from "@/lib/auth/auth";
+import { auth } from "@/lib/auth/nextauth.config";
 import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
   try {
     // Verify JWT private key is configured
-    if (!privateKey) {
+    const privateKeyBase64 = process.env.JWT_PRIVATE_KEY || "";
+    if (!privateKeyBase64) {
       console.error("JWT_PRIVATE_KEY not configured in environment variables");
       return NextResponse.json(
         { error: "JWT authentication not configured" },
@@ -26,10 +27,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get current session from Better Auth
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf-8');
+
+    // Get current session from NextAuth
+    const session = await auth();
 
     if (!session || !session.user) {
       return NextResponse.json(

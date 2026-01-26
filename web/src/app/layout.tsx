@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { PreferencesProvider } from '@/contexts/PreferencesContext';
@@ -26,17 +27,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AuthProvider>
-            <PreferencesProvider>
-              <ActivityProvider>
-                <AOSInit />
-                {children}
-                <Toaster />
-              </ActivityProvider>
-            </PreferencesProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <PreferencesProvider>
+                <ActivityProvider>
+                  <AOSInit />
+                  {children}
+                  <Toaster />
+                </ActivityProvider>
+              </PreferencesProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
