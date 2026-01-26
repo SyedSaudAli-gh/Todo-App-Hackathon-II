@@ -14,6 +14,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
+console.log("🔌 Initializing NextAuth with database connection...");
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PostgresAdapter(pool),
   providers: [
@@ -26,31 +28,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.error("❌ Missing credentials");
           throw new Error("Email and password required");
         }
 
         try {
+          const email = credentials.email as string;
+          const password = credentials.password as string;
+
+          console.log("🔍 Login attempt for:", email);
+
           // Query user from database
           const result = await pool.query(
             'SELECT * FROM users WHERE email = $1',
-            [credentials.email]
+            [email]
           );
 
           const user = result.rows[0];
 
-          if (!user) {
+          if (!user || !user.password) {
+            console.error("❌ User not found or no password:", email);
             throw new Error("Invalid email or password");
           }
 
-          // Verify password
-          const isValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          );
+          console.log("✅ User found:", email);
+
+          // Verify password with bcrypt
+          const isValid = await bcrypt.compare(password, user.password);
 
           if (!isValid) {
+            console.error("❌ Password mismatch for:", email);
             throw new Error("Invalid email or password");
           }
+
+          console.log("✅ Password correct, logging in:", email);
 
           return {
             id: user.id,
@@ -60,7 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           };
         } catch (error) {
           console.error("Auth error:", error);
-          throw new Error("Authentication failed");
+          throw error;
         }
       },
     }),
@@ -102,3 +113,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
 });
+
+console.log("✅ NextAuth initialized with database adapter");

@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, email, password } = body;
 
+    console.log("📝 Signup request for:", email);
+
     // Validate input
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -33,16 +35,19 @@ export async function POST(request: NextRequest) {
     );
 
     if (existingUser.rows.length > 0) {
+      console.log("❌ User already exists:", email);
       return NextResponse.json(
         { error: "User with this email already exists" },
         { status: 400 }
       );
     }
 
-    // Hash password
+    // Hash password with bcrypt
+    console.log("🔐 Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user in database
+    console.log("💾 Creating user in database...");
     const result = await pool.query(
       `INSERT INTO users (name, email, password, "emailVerified", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, NULL, NOW(), NOW())
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
     );
 
     const user = result.rows[0];
+    console.log("✅ User created successfully:", email);
 
     return NextResponse.json({
       user: {
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
       message: "User created successfully",
     });
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error("❌ Signup error:", error);
     return NextResponse.json(
       { error: "Failed to create user" },
       { status: 500 }
