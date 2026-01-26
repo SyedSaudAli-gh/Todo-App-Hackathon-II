@@ -8,6 +8,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  advanced: {
+    generateId: false,
+    disableCSRFCheck: false,
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;
