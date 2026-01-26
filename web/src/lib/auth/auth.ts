@@ -32,10 +32,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const auth = betterAuth({
-  database: {
-    provider: "postgres",
-    url: process.env.DATABASE_URL,
-  },
+  database: process.env.DATABASE_URL,
   trustedOrigins: [
     "http://localhost:3000",
     "https://todo-app-hackathon-ii.vercel.app",
