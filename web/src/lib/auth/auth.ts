@@ -23,13 +23,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
 });
 
-// Test pool connection before passing to Better Auth
-pool.query('SELECT 1').then(() => {
-  console.log("✅ Pool connection test successful");
-}).catch((err) => {
-  console.error("❌ Pool connection test failed:", err);
-});
-
 console.log("Initializing Better Auth...");
 
 export const auth = betterAuth({
