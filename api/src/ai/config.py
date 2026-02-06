@@ -76,6 +76,7 @@ Confirmation Flow:
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra environment variables
 
     def validate_config(self) -> None:
         """
