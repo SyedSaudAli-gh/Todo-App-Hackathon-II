@@ -5,10 +5,10 @@ All endpoints require JWT authentication with user_id extracted from 'sub' claim
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
-from database import get_session
-from dependencies import get_current_user_id
-from schemas.todo import TodoCreate, TodoUpdate, TodoResponse, TodoListResponse
-from services import todo_service
+from ..database import get_session
+from ..dependencies import get_current_user_id
+from ..schemas.todo import TodoCreate, TodoUpdate, TodoResponse, TodoListResponse
+from ..services import todo_service
 
 
 router = APIRouter()

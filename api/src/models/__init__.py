@@ -1,6 +1,6 @@
 """
 Database models package.
 """
-from models.todo import Todo
+from .todo import Todo
 
 __all__ = ["Todo"]

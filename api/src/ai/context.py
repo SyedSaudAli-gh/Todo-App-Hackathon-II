@@ -4,7 +4,7 @@ Conversation Context Builder for AI Agent.
 Builds conversation context from message history for LLM processing.
 """
 from typing import List, Dict
-from models.message import Message
+from ..models.message import Message
 
 
 class ConversationContextBuilder:

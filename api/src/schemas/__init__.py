@@ -1,8 +1,8 @@
 """
 Pydantic schemas package.
 """
-from schemas.todo import TodoCreate, TodoUpdate, TodoResponse, TodoListResponse
-from schemas.error import ErrorResponse, ValidationErrorResponse
+from .todo import TodoCreate, TodoUpdate, TodoResponse, TodoListResponse
+from .error import ErrorResponse, ValidationErrorResponse
 
 __all__ = [
     "TodoCreate",

@@ -5,8 +5,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from config import settings
-from middleware.error_handler import (
+from .config import settings
+from .middleware.error_handler import (
     http_exception_handler,
     validation_exception_handler,
     general_exception_handler,
@@ -51,19 +51,19 @@ async def root():
 
 
 # Register health check router
-from routers.health import router as health_router
+from .routers.health import router as health_router
 app.include_router(health_router, prefix=f"/api/{settings.API_VERSION}", tags=["health"])
 
 # Register todos router at both paths for compatibility
-from routers.todos import router as todos_router
+from .routers.todos import router as todos_router
 app.include_router(todos_router, prefix=f"/api/{settings.API_VERSION}", tags=["todos"])
 # Specification-compliant path: /api/tasks (without version prefix)
 app.include_router(todos_router, prefix="/api", tags=["tasks"])
 
 # Register users router
-from routers.users import router as users_router
+from .routers.users import router as users_router
 app.include_router(users_router, prefix=f"/api/{settings.API_VERSION}", tags=["users"])
 
 # Register chat router (Phase III)
-from routers.chat import router as chat_router
+from .routers.chat import router as chat_router
 app.include_router(chat_router, prefix=f"/api/{settings.API_VERSION}", tags=["chat"])

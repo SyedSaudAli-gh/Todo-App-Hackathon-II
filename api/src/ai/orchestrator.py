@@ -11,13 +11,13 @@ from typing import Any, Dict, List, Optional
 from openai import AsyncOpenAI
 from sqlmodel import Session
 
-from ai.config import agent_config
-from ai.errors import AIAgentTimeoutError
-from mcp.tools.create_task import create_task_tool
-from mcp.tools.list_tasks import list_tasks_tool
-from mcp.tools.get_task import get_task_tool
-from mcp.tools.update_task import update_task_tool
-from mcp.tools.delete_task import delete_task_tool
+from .config import agent_config
+from .errors import AIAgentTimeoutError
+from ..mcp.tools.create_task import create_task_tool
+from ..mcp.tools.list_tasks import list_tasks_tool
+from ..mcp.tools.get_task import get_task_tool
+from ..mcp.tools.update_task import update_task_tool
+from ..mcp.tools.delete_task import delete_task_tool
 
 logger = logging.getLogger(__name__)
 

@@ -9,9 +9,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from database import get_session
-from dependencies import get_current_user
-from schemas.chat import (
+from ..database import get_session
+from ..dependencies import get_current_user
+from ..schemas.chat import (
     ChatRequest,
     ChatResponse,
     ChatErrorResponse,
@@ -20,11 +20,11 @@ from schemas.chat import (
     MessageListResponse,
     MessageResponse
 )
-from services.conversation import ConversationService
-from ai.orchestrator import AIAgentOrchestrator
-from ai.context import ConversationContextBuilder
-from ai.errors import AIAgentTimeoutError
-from models.message import MessageRole
+from ..services.conversation import ConversationService
+from ..ai.orchestrator import AIAgentOrchestrator
+from ..ai.context import ConversationContextBuilder
+from ..ai.errors import AIAgentTimeoutError
+from ..models.message import MessageRole
 
 router = APIRouter()
 

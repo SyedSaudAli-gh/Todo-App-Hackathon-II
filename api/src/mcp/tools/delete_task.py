@@ -9,7 +9,7 @@ IMPORTANT: Agent MUST ask for user confirmation before calling this tool.
 """
 from typing import Dict, Any, Optional
 from sqlmodel import Session
-from services import todo_service
+from ...services import todo_service
 
 
 # OpenAI function schema for delete_task tool
