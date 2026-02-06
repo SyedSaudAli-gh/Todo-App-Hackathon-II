@@ -25,13 +25,36 @@ app = FastAPI(
     },
 )
 
-# Configure CORS
+# Configure CORS with wildcard support for Vercel
+# Allow all Vercel preview deployments and production domains
+import re
+
+def is_allowed_origin(origin: str) -> bool:
+    """Check if origin is allowed (supports Vercel wildcard patterns)."""
+    allowed_patterns = [
+        r"^https://.*\.vercel\.app$",  # All Vercel deployments
+        r"^http://localhost:\d+$",      # Local development
+    ]
+
+    # Also check explicit origins from settings
+    if origin in settings.cors_origins_list:
+        return True
+
+    # Check against patterns
+    for pattern in allowed_patterns:
+        if re.match(pattern, origin):
+            return True
+
+    return False
+
+# Custom CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origin_regex=r"^https://.*\.vercel\.app$|^http://localhost:\d+$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Register error handlers

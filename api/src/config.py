@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # CORS Configuration
+    # For production: Add your specific Vercel domain(s) separated by commas
+    # The main.py uses regex to allow all *.vercel.app domains automatically
+    # Example: "https://your-app.vercel.app,http://localhost:3000"
     CORS_ORIGINS: str = "http://localhost:3000"
 
     # Server Configuration
