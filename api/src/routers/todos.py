@@ -115,7 +115,7 @@ async def get_todo(
 @router.patch(
     "/tasks/{todo_id}",
     response_model=TodoResponse,
-    summary="Update a todo",
+    summary="Update a todo (PATCH)",
     description="Update a todo's title, description, or completion status. Only updates todos owned by the authenticated user. Requires JWT authentication.",
 )
 async def update_todo(
@@ -126,6 +126,46 @@ async def update_todo(
 ) -> TodoResponse:
     """
     Update an existing todo with partial data for the authenticated user.
+
+    Args:
+        todo_id: Todo ID to update
+        todo_data: Partial update data (title, description, completed)
+        session: Database session (injected)
+        user_id: Authenticated user ID from JWT (injected)
+
+    Returns:
+        Updated todo
+
+    Raises:
+        401: Not authenticated or invalid JWT token
+        404: Todo not found or not owned by user
+        422: Validation error (empty title, title >200 chars, description >2000 chars)
+    """
+    todo = await todo_service.update_todo(session, todo_id, todo_data, user_id)
+
+    if not todo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Todo with id {todo_id} not found",
+        )
+
+    return TodoResponse.model_validate(todo)
+
+
+@router.put(
+    "/tasks/{todo_id}",
+    response_model=TodoResponse,
+    summary="Update a todo (PUT)",
+    description="Update a todo's title, description, or completion status. Only updates todos owned by the authenticated user. Requires JWT authentication.",
+)
+async def update_todo_put(
+    todo_id: int,
+    todo_data: TodoUpdate,
+    session: Annotated[Session, Depends(get_session)],
+    user_id: Annotated[str, Depends(get_current_user_id)],
+) -> TodoResponse:
+    """
+    Update an existing todo with partial data for the authenticated user (PUT method).
 
     Args:
         todo_id: Todo ID to update

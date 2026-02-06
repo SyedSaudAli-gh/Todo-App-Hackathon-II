@@ -1,0 +1,127 @@
+/**
+ * Custom ChatKit Styles
+ * T065: Custom styling for ChatKit components
+ * T066: Tailwind CSS classes for responsive design
+ */
+
+/* ChatKit Container */
+.chatkit-container {
+  @apply w-full h-full flex flex-col bg-gray-50;
+}
+
+/* ChatKit Message List */
+.chatkit-message-list {
+  @apply flex-1 overflow-y-auto px-4 py-6 space-y-4;
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB #F9FAFB;
+}
+
+.chatkit-message-list::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.chatkit-message-list::-webkit-scrollbar-track {
+  @apply bg-gray-50;
+}
+
+.chatkit-message-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+.chatkit-message-list::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* ChatKit User Message */
+.chatkit-message-user {
+  @apply flex justify-end mb-4;
+}
+
+.chatkit-message-user .chatkit-message-bubble {
+  @apply bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[70%] shadow-sm;
+}
+
+/* ChatKit Assistant Message */
+.chatkit-message-assistant {
+  @apply flex justify-start mb-4;
+}
+
+.chatkit-message-assistant .chatkit-message-bubble {
+  @apply bg-gray-100 text-gray-900 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[70%] shadow-sm;
+}
+
+/* ChatKit Message Content */
+.chatkit-message-content {
+  @apply text-sm whitespace-pre-wrap break-words;
+}
+
+/* ChatKit Message Timestamp */
+.chatkit-message-timestamp {
+  @apply text-xs text-gray-500 mt-1 px-1;
+}
+
+/* ChatKit Input Container */
+.chatkit-input-container {
+  @apply border-t border-gray-200 bg-white px-4 py-3;
+}
+
+/* ChatKit Input Field */
+.chatkit-input-field {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+}
+
+/* ChatKit Send Button */
+.chatkit-send-button {
+  @apply mt-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+/* ChatKit Loading Indicator */
+.chatkit-loading {
+  @apply flex items-center justify-center py-4;
+}
+
+/* ChatKit Error Message */
+.chatkit-error {
+  @apply bg-red-50 border-l-4 border-red-500 p-4 mx-4 mb-4;
+}
+
+.chatkit-error-text {
+  @apply text-sm text-red-700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chatkit-message-user .chatkit-message-bubble,
+  .chatkit-message-assistant .chatkit-message-bubble {
+    @apply max-w-[85%];
+  }
+
+  .chatkit-input-container {
+    @apply px-3 py-2;
+  }
+
+  .chatkit-input-field {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .chatkit-send-button {
+    @apply px-4 py-2 text-sm;
+  }
+}
+
+/* Animation for new messages */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chatkit-message-user,
+.chatkit-message-assistant {
+  animation: slideIn 0.3s ease-out;
+}

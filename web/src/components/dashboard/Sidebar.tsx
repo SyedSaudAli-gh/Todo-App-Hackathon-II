@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CheckSquare, User, Settings } from "lucide-react";
+import { Home, CheckSquare, User, Settings, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [

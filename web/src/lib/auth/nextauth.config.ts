@@ -5,6 +5,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import { Pool } from "pg";
 import PostgresAdapter from "@auth/pg-adapter";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -100,12 +101,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+
+        // Generate JWT access token for backend API
+        try {
+          const privateKey = process.env.JWT_PRIVATE_KEY;
+          if (privateKey) {
+            // Decode base64 private key
+            const decodedKey = Buffer.from(privateKey, 'base64').toString('utf-8');
+
+            // Generate JWT token with RS256
+            const accessToken = jwt.sign(
+              {
+                sub: user.id,
+                email: user.email,
+                name: user.name,
+              },
+              decodedKey,
+              {
+                algorithm: 'RS256',
+                expiresIn: '7d',
+              }
+            );
+
+            token.accessToken = accessToken;
+          }
+        } catch (error) {
+          console.error('Error generating access token:', error);
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+      }
+      // Add access token to session
+      if (token.accessToken) {
+        (session as any).accessToken = token.accessToken;
       }
       return session;
     },

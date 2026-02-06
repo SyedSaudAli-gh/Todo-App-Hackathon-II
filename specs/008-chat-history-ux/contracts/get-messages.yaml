@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: Chat History API - Get Messages
+  description: Retrieve all messages for a specific conversation
+  version: 1.0.0
+
+paths:
+  /api/v1/chat/conversations/{conversation_id}/messages:
+    get:
+      summary: Get conversation messages
+      description: |
+        Retrieve all messages for a specific conversation owned by the authenticated user.
+        Messages are returned in chronological order (oldest first).
+      operationId: getConversationMessages
+      tags:
+        - Chat History
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversation_id
+          in: path
+          description: Unique identifier of the conversation
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Maximum number of messages to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+        - name: offset
+          in: query
+          description: Number of messages to skip (for pagination)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved messages
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - conversation_id
+                  - messages
+                  - total
+                  - limit
+                  - offset
+                properties:
+                  conversation_id:
+                    type: string
+                    format: uuid
+                    description: ID of the conversation
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  total:
+                    type: integer
+                    description: Total number of messages in this conversation
+                    example: 10
+                  limit:
+                    type: integer
+                    description: Number of messages returned in this response
+                    example: 100
+                  offset:
+                    type: integer
+                    description: Number of messages skipped
+                    example: 0
+              examples:
+                success:
+                  summary: Successful response with messages
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    messages:
+                      - message_id: "660e8400-e29b-41d4-a716-446655440000"
+                        role: "user"
+                        message_text: "Create a task to buy groceries"
+                        timestamp: "2026-02-05T10:00:00Z"
+                      - message_id: "660e8400-e29b-41d4-a716-446655440001"
+                        role: "assistant"
+                        message_text: "I've created a task 'Buy groceries' for you."
+                        timestamp: "2026-02-05T10:00:05Z"
+                    total: 10
+                    limit: 100
+                    offset: 0
+                empty:
+                  summary: Conversation with no messages
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    messages: []
+                    total: 0
+                    limit: 100
+                    offset: 0
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Not authenticated"
+        '404':
+          description: Not Found - Conversation does not exist or user does not have access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Conversation not found or you do not have access to it"
+        '422':
+          description: Unprocessable Entity - Invalid conversation_id format or query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_uuid:
+                  summary: Invalid UUID format
+                  value:
+                    detail: "Invalid conversation_id format. Must be a valid UUID."
+                invalid_limit:
+                  summary: Invalid limit parameter
+                  value:
+                    detail: "Invalid limit value. Must be between 1 and 500."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Database connection error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from authentication system
+
+  schemas:
+    Message:
+      type: object
+      required:
+        - message_id
+        - role
+        - message_text
+        - timestamp
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the message
+          example: "660e8400-e29b-41d4-a716-446655440000"
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+          description: Role of the message sender
+          example: "user"
+        message_text:
+          type: string
+          description: Content of the message (conversational text only, no JSON tool calls)
+          maxLength: 10000
+          example: "Create a task to buy groceries"
+        timestamp:
+          type: string
+          format: date-time
+          description: When the message was sent (UTC)
+          example: "2026-02-05T10:00:00Z"
+
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Not authenticated"

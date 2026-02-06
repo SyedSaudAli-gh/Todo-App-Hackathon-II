@@ -38,20 +38,25 @@ async def get_current_user(
         # Extract token from Bearer credentials
         token = credentials.credentials
 
+        # Debug logging
+        logger.info(f"🔑 Received JWT token (first 20 chars): {token[:20]}...")
+        logger.info(f"📝 Token length: {len(token)}")
+        logger.info(f"📝 Token segments: {len(token.split('.'))}")
+
         # Validate JWT and get payload
         payload = validate_jwt_token(token)
 
         # Extract user_id from 'sub' claim
         user_id = extract_user_id_from_jwt(payload)
 
-        logger.info(f"User authenticated via JWT: {user_id[:8]}...")
+        logger.info(f"✅ User authenticated via JWT: {user_id[:8]}...")
         return user_id
 
     except HTTPException:
         # Re-raise HTTP exceptions from security module
         raise
     except Exception as e:
-        logger.error(f"Unexpected error in get_current_user: {str(e)}")
+        logger.error(f"❌ Unexpected error in get_current_user: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed"

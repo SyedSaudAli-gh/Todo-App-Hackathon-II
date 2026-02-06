@@ -27,6 +27,22 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
+    # Phase III: AI Agent Configuration
+    # Option 1: OpenAI Direct (Recommended - reliable tool calling)
+    OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+
+    # Option 2: OpenRouter (fallback if OpenAI key not provided)
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+
+    # Model selection - use OpenAI for reliable tool calling
+    AGENT_MODEL: str = "gpt-4o-mini"  # Excellent tool calling, low cost (~$0.15/1M tokens)
+    # Alternative: "gpt-3.5-turbo" (cheaper but less reliable)
+    # For OpenRouter: "anthropic/claude-3-haiku" (paid but very reliable)
+    AGENT_TIMEOUT: int = 15
+    CONVERSATION_HISTORY_LIMIT: int = 20
+
     @property
     def cors_origins_list(self) -> List[str]:
         """Convert CORS_ORIGINS string to list."""

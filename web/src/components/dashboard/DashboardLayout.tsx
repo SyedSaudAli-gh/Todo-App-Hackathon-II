@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { MobileMenu } from "./MobileMenu";
+import { ChatWidgetWrapper } from "@/components/chatbot/ChatWidgetWrapper";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -35,6 +36,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Chat Widget - Available on all dashboard pages */}
+      <ChatWidgetWrapper />
     </div>
   );
 }

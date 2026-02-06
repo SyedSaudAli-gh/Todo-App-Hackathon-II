@@ -11,9 +11,10 @@ import { createTodo, listTodos } from "@/lib/api/todos";
 import { ApiError } from "@/lib/api/client";
 import { useToast } from "@/hooks/use-toast";
 import { useActivity } from "@/contexts/ActivityContext";
+import { useTodoRefresh } from "@/contexts/TodoRefreshContext";
 
 export default function TodosPage() {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { refreshTrigger, triggerRefresh } = useTodoRefresh();
   const [isCreating, setIsCreating] = useState(false);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,8 +68,8 @@ export default function TodosPage() {
       // Track activity
       addEvent('created', newTodo.id.toString(), newTodo.title);
 
-      // Trigger refresh of todo list
-      setRefreshTrigger((prev) => prev + 1);
+      // Trigger refresh of todo list using shared context
+      triggerRefresh();
     } catch (err) {
       const message = err instanceof ApiError ? err.message : "Failed to create todo";
       toast({

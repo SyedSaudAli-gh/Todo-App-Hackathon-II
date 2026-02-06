@@ -20,10 +20,11 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Phase II Web App** (RECOMMENDED): `api/src/`, `web/src/`
+- **Phase III AI Agent App**: `api/src/` (backend + agent + MCP), `web/src/` (frontend + chat UI)
+- **Phase II Web App**: `api/src/`, `web/src/`
 - **Phase I Single project** (DEPRECATED): `src/`, `tests/` at repository root
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume Phase II web app - adjust based on plan.md structure
+- Paths shown below assume Phase II/III web app - adjust based on plan.md structure
 
 <!-- 
   ============================================================================
@@ -71,6 +72,33 @@ description: "Task list template for feature implementation"
 - [Setup] Setup OpenAPI/Swagger documentation at `/api/v1/docs`
 - [Setup] Create API base URL configuration for frontend
 
+### Phase III AI Agent Application Setup (if applicable)
+
+**AI/Agent Setup**:
+- [P] [Setup] Install OpenAI Agents SDK in `api/requirements.txt`
+- [P] [Setup] Install MCP SDK for Python in `api/requirements.txt`
+- [P] [Setup] Configure OpenRouter API integration in `api/src/config.py`
+- [P] [Setup] Setup `OPENROUTER_API_KEY` environment variable
+- [P] [Setup] Create agent configuration module in `api/src/agent/config.py`
+- [P] [Setup] Create MCP server structure in `api/src/mcp/`
+
+**Chat UI Setup**:
+- [P] [Setup] Install OpenAI ChatKit in `web/package.json`
+- [P] [Setup] Configure ChatKit components in `web/src/components/chat/`
+- [P] [Setup] Setup chat API client in `web/src/lib/api/chat.ts`
+- [P] [Setup] Create chat page route in `web/src/app/chat/`
+
+**Conversation Persistence Setup**:
+- [P] [Setup] Create Conversation model in `api/src/models/conversation.py`
+- [P] [Setup] Create Message model in `api/src/models/message.py`
+- [P] [Setup] Create ToolCall model in `api/src/models/tool_call.py`
+- [Setup] Create Alembic migration for conversation tables
+
+**Agent Testing Setup**:
+- [P] [Setup] Setup agent behavior tests in `api/tests/test_agent/`
+- [P] [Setup] Setup MCP tool contract tests in `api/tests/test_mcp/`
+- [P] [Setup] Create test fixtures for conversations in `api/tests/fixtures/`
+
 ### Phase I Single Project Setup (DEPRECATED - for reference only)
 
 **Purpose**: Project initialization and basic structure
@@ -114,6 +142,56 @@ description: "Task list template for feature implementation"
 - [ ] T019 Verify database connection from API
 - [ ] T020 Verify frontend can call API endpoints
 
+### Phase III Foundational Tasks (if applicable)
+
+**Purpose**: Core AI agent infrastructure that MUST be complete before ANY agent-based user story can be implemented
+
+**⚠️ CRITICAL**: No agent-based user story work can begin until this phase is complete
+
+**MCP Server Layer**:
+- [ ] T021 Create MCP server base structure in `api/src/mcp/server.py`
+- [ ] T022 Implement MCP tool registry in `api/src/mcp/registry.py`
+- [ ] T023 Create MCP tool base class in `api/src/mcp/tools/base.py`
+- [ ] T024 [P] Setup MCP server configuration in `api/src/mcp/config.py`
+- [ ] T025 [P] Create MCP tool contract tests in `api/tests/test_mcp/test_tools.py`
+
+**Agent Layer**:
+- [ ] T026 Configure OpenAI Agents SDK with OpenRouter in `api/src/agent/client.py`
+- [ ] T027 Create agent configuration module in `api/src/agent/config.py`
+- [ ] T028 Implement agent orchestration logic in `api/src/agent/orchestrator.py`
+- [ ] T029 [P] Create agent behavior tests in `api/tests/test_agent/test_behavior.py`
+- [ ] T030 [P] Setup agent error handling in `api/src/agent/errors.py`
+
+**Conversation Persistence Layer**:
+- [ ] T031 Create Conversation SQLModel in `api/src/models/conversation.py`
+- [ ] T032 Create Message SQLModel in `api/src/models/message.py`
+- [ ] T033 Create ToolCall SQLModel in `api/src/models/tool_call.py`
+- [ ] T034 Create Alembic migration for conversation tables
+- [ ] T035 [P] Create conversation service in `api/src/services/conversation.py`
+- [ ] T036 [P] Create conversation repository tests in `api/tests/test_models/test_conversation.py`
+
+**Chat API Layer**:
+- [ ] T037 Create chat API schemas in `api/src/schemas/chat.py`
+- [ ] T038 Implement chat router in `api/src/routers/chat.py`
+- [ ] T039 Create conversation endpoints (create, get, list)
+- [ ] T040 Create message endpoints (send, get history)
+- [ ] T041 [P] Create chat API tests in `api/tests/test_api/test_chat.py`
+
+**Chat UI Layer**:
+- [ ] T042 Create ChatKit integration in `web/src/components/chat/ChatInterface.tsx`
+- [ ] T043 Create chat API client in `web/src/lib/api/chat.ts`
+- [ ] T044 Create chat page in `web/src/app/chat/page.tsx`
+- [ ] T045 [P] Create message components in `web/src/components/chat/Message.tsx`
+- [ ] T046 [P] Create chat UI tests in `web/tests/unit/chat/`
+
+**Integration**:
+- [ ] T047 Test agent-MCP integration (agent can call MCP tools)
+- [ ] T048 Test conversation persistence (messages saved to database)
+- [ ] T049 Test chat API-agent integration (API can invoke agent)
+- [ ] T050 Test frontend-chat API integration (UI can send/receive messages)
+
+**Checkpoint**: Foundation ready - agent-based user story implementation can now begin in parallel
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
@@ -152,6 +230,41 @@ description: "Task list template for feature implementation"
 - [ ] T037 [US1] Test end-to-end user flow (create → read → update → delete)
 - [ ] T038 [US1] Test error handling (network errors, validation errors)
 - [ ] T039 [US1] Test loading states across all operations
+
+### Phase III Implementation Pattern (MCP Tools → Agent → Chat API → Chat UI)
+
+**MCP Tool Tasks** (implement first):
+- [ ] T051 [P] [US1] Create MCP tool for [operation] in `api/src/mcp/tools/[tool_name].py`
+- [ ] T052 [P] [US1] Define tool input schema with Pydantic
+- [ ] T053 [P] [US1] Define tool output schema with Pydantic
+- [ ] T054 [US1] Implement stateless tool logic (fetch from DB, operate, persist to DB)
+- [ ] T055 [US1] Register tool in MCP server registry
+- [ ] T056 [P] [US1] Write MCP tool contract tests in `api/tests/test_mcp/test_[tool_name].py`
+
+**Agent Behavior Tasks** (implement second):
+- [ ] T057 [US1] Define agent prompt for [operation] in `api/src/agent/prompts.py`
+- [ ] T058 [US1] Implement agent tool invocation logic in `api/src/agent/orchestrator.py`
+- [ ] T059 [US1] Add confirmation logic for destructive operations
+- [ ] T060 [US1] Implement error handling with user-friendly messages
+- [ ] T061 [P] [US1] Write agent behavior tests in `api/tests/test_agent/test_[operation].py`
+
+**Chat API Tasks** (implement third):
+- [ ] T062 [US1] Update chat endpoint to handle [operation] intent
+- [ ] T063 [US1] Implement conversation context retrieval from database
+- [ ] T064 [US1] Persist agent responses and tool calls to database
+- [ ] T065 [P] [US1] Write chat API tests in `api/tests/test_api/test_chat_[operation].py`
+
+**Chat UI Tasks** (implement fourth):
+- [ ] T066 [US1] Update ChatKit interface to display [operation] results
+- [ ] T067 [US1] Add loading states for agent processing
+- [ ] T068 [US1] Add error handling for agent failures
+- [ ] T069 [P] [US1] Write chat UI tests in `web/tests/unit/chat/test_[operation].tsx`
+
+**Integration Tasks** (implement last):
+- [ ] T070 [US1] Test end-to-end agent flow (user message → agent → MCP tool → database → response)
+- [ ] T071 [US1] Test conversation persistence (messages survive page refresh)
+- [ ] T072 [US1] Test error handling (tool failures, agent errors, network issues)
+- [ ] T073 [US1] Test confirmation flows (destructive operations require user approval)
 
 **Acceptance**: [Specific criteria from spec.md]
 

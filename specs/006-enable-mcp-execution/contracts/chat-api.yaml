@@ -1,0 +1,426 @@
+openapi: 3.0.3
+info:
+  title: Chat API - AI Todo Assistant
+  description: REST API for managing conversations and messages with the AI agent
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.todo-app.com/api/v1
+    description: Production server
+
+tags:
+  - name: conversations
+    description: Conversation management endpoints
+  - name: messages
+    description: Message and agent interaction endpoints
+
+paths:
+  /chat/conversations:
+    post:
+      tags:
+        - conversations
+      summary: Create a new conversation
+      description: Initialize a new conversation session for a user
+      operationId: createConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '201':
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - conversations
+      summary: List user conversations
+      description: Get all conversations for the authenticated user
+      operationId: listConversations
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of conversations to return
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of conversations to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /chat/conversations/{conversation_id}:
+    get:
+      tags:
+        - conversations
+      summary: Get conversation history
+      description: Retrieve all messages in a conversation
+      operationId: getConversation
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of messages to return
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+      responses:
+        '200':
+          description: Conversation history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationHistoryResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - conversations
+      summary: Delete a conversation
+      description: Permanently delete a conversation and all its messages
+      operationId: deleteConversation
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Conversation deleted successfully
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /chat/conversations/{conversation_id}/messages:
+    post:
+      tags:
+        - messages
+      summary: Send a message to the agent
+      description: Send a user message and receive agent response with tool execution
+      operationId: sendMessage
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Agent response received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Agent processing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreateConversationRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+          description: ID of the user creating the conversation
+          example: 1
+
+    ConversationResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          description: Unique conversation identifier
+          example: 42
+        user_id:
+          type: integer
+          description: ID of the user who owns this conversation
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when conversation was created
+          example: "2026-02-03T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when conversation was last updated
+          example: "2026-02-03T10:30:00Z"
+
+    ConversationListResponse:
+      type: object
+      properties:
+        conversations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationResponse'
+        total:
+          type: integer
+          description: Total number of conversations
+          example: 5
+        limit:
+          type: integer
+          description: Maximum conversations per page
+          example: 20
+        offset:
+          type: integer
+          description: Number of conversations skipped
+          example: 0
+
+    ConversationHistoryResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          description: Conversation identifier
+          example: 42
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        total_messages:
+          type: integer
+          description: Total number of messages in conversation
+          example: 15
+
+    SendMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: User message content
+          minLength: 1
+          maxLength: 10000
+          example: "Create a task to buy groceries"
+
+    MessageResponse:
+      type: object
+      properties:
+        message_id:
+          type: integer
+          description: Unique message identifier
+          example: 123
+        conversation_id:
+          type: integer
+          description: Conversation this message belongs to
+          example: 42
+        role:
+          type: string
+          enum: [user, assistant, system]
+          description: Message sender role
+          example: "assistant"
+        content:
+          type: string
+          description: Message content
+          example: "I've created a task 'Buy groceries' for you (Task ID: 5)"
+        tool_calls:
+          type: array
+          description: Tools executed by the agent (if any)
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when message was created
+          example: "2026-02-03T10:35:00Z"
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Message identifier
+          example: 123
+        role:
+          type: string
+          enum: [user, assistant, system]
+          description: Message sender role
+          example: "user"
+        content:
+          type: string
+          description: Message content
+          example: "Create a task to buy groceries"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when message was created
+          example: "2026-02-03T10:35:00Z"
+
+    ToolCall:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Tool call identifier
+          example: 456
+        tool_name:
+          type: string
+          description: Name of the tool that was called
+          enum: [add_task, list_tasks, update_task, delete_task]
+          example: "add_task"
+        tool_input:
+          type: object
+          description: Input parameters passed to the tool
+          example:
+            title: "Buy groceries"
+            user_id: 1
+        tool_output:
+          type: object
+          description: Output returned by the tool
+          example:
+            task_id: 5
+            title: "Buy groceries"
+            status: "pending"
+        status:
+          type: string
+          enum: [success, error]
+          description: Tool execution status
+          example: "success"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when tool was called
+          example: "2026-02-03T10:35:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Conversation not found"
+        code:
+          type: string
+          description: Error code
+          example: "NOT_FOUND"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

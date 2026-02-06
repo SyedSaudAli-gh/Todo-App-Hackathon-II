@@ -9,8 +9,11 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { PreferencesProvider } from '@/contexts/PreferencesContext';
 import { ActivityProvider } from '@/contexts/ActivityContext';
+import { TodoRefreshProvider } from '@/contexts/TodoRefreshContext';
 import { Toaster } from '@/components/ui/toaster';
 import { AOSInit } from '@/components/ui/aos-init';
+import { ChatWidgetWrapper } from '@/components/chatbot/ChatWidgetWrapper';
+import '@/styles/chatkit-custom.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,9 +35,13 @@ export default function RootLayout({
             <AuthProvider>
               <PreferencesProvider>
                 <ActivityProvider>
-                  <AOSInit />
-                  {children}
-                  <Toaster />
+                  <TodoRefreshProvider>
+                    <AOSInit />
+                    {children}
+                    <Toaster />
+                    {/* T099-T105: Global chat widget on all pages */}
+                    <ChatWidgetWrapper />
+                  </TodoRefreshProvider>
                 </ActivityProvider>
               </PreferencesProvider>
             </AuthProvider>

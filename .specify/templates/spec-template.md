@@ -176,6 +176,102 @@
 **Note**: Detailed user flows will be defined in `specs/user-flows/[feature]-web-flows.md`
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+### Phase III AI Agent Behavior *(include for Phase III AI features)*
+
+<!--
+  For Phase III features involving AI agents, specify the agent behavior and tool usage.
+  This section defines how the AI agent interacts with users and MCP tools.
+-->
+
+#### Agent Capabilities
+- **Natural Language Understanding**: [What user intents the agent should understand]
+- **Task Operations**: [Which task operations the agent can perform via MCP tools]
+- **Confirmation Behavior**: [When the agent should ask for user confirmation]
+- **Error Handling**: [How the agent handles errors gracefully]
+
+#### Example Interactions
+1. **User**: "Create a task to buy groceries"
+   **Agent**: [Expected agent response and tool invocation]
+
+2. **User**: "Delete all completed tasks"
+   **Agent**: [Expected confirmation prompt and behavior]
+
+**Note**: Detailed agent behavior will be defined in `specs/phase-iii/agent.md`
+
+### Phase III MCP Tools *(include for Phase III AI features)*
+
+<!--
+  For Phase III features, specify the MCP tools that the agent will use.
+  This section defines the tool contracts without implementation details.
+-->
+
+#### Tool 1: [ToolName]
+- **Purpose**: [What this tool does]
+- **Inputs**: [Key input parameters - e.g., task_title, task_description]
+- **Outputs**: [What the tool returns - e.g., task_id, success status]
+- **Stateless**: Must fetch all state from database
+- **Database Operations**: [Which tables this tool interacts with]
+
+#### Tool 2: [ToolName]
+- **Purpose**: [What this tool does]
+- **Inputs**: [Key input parameters]
+- **Outputs**: [What the tool returns]
+- **Stateless**: Must fetch all state from database
+- **Database Operations**: [Which tables this tool interacts with]
+
+[Add more tools as needed]
+
+**Note**: Detailed MCP tool contracts will be defined in `specs/phase-iii/mcp-tools.md`
+
+### Phase III Chat API *(include for Phase III AI features)*
+
+<!--
+  For Phase III features, specify the chat API endpoints for agent interactions.
+  This section defines the API contract for conversation management.
+-->
+
+#### Endpoint 1: Send Message
+- **Method**: POST
+- **Path**: `/api/v1/chat/conversations/{conversation_id}/messages`
+- **Purpose**: Send user message and get agent response
+- **Request**: User message text
+- **Response**: Agent response with tool calls
+- **Streaming**: [Yes/No - if streaming responses supported]
+
+#### Endpoint 2: Get Conversation History
+- **Method**: GET
+- **Path**: `/api/v1/chat/conversations/{conversation_id}`
+- **Purpose**: Retrieve conversation history
+- **Response**: List of messages with timestamps
+
+[Add more endpoints as needed]
+
+**Note**: Detailed chat API contracts will be defined in `specs/phase-iii/chat-api.md`
+
+### Phase III Conversation Persistence *(include for Phase III AI features)*
+
+<!--
+  For Phase III features, specify how conversations and messages are persisted.
+  This section defines the data model for conversation tracking.
+-->
+
+#### Table: Conversations
+- **Purpose**: Store user conversation sessions
+- **Key Fields**: id, user_id, created_at, updated_at
+- **Relationships**: Has many Messages
+
+#### Table: Messages
+- **Purpose**: Store user and agent messages
+- **Key Fields**: id, conversation_id, role (user/agent), content, created_at
+- **Relationships**: Belongs to Conversation
+
+#### Table: ToolCalls
+- **Purpose**: Track agent tool invocations
+- **Key Fields**: id, message_id, tool_name, tool_input, tool_output, created_at
+- **Relationships**: Belongs to Message
+
+**Note**: Detailed conversation schema will be defined in `specs/phase-iii/database.md`
+
 ## Success Criteria *(mandatory)*
 
 <!--

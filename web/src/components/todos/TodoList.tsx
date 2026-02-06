@@ -73,6 +73,24 @@ export function TodoList({ refreshTrigger = 0, filteredTodos, showFiltered = fal
     }
   };
 
+  const handleEdit = async (id: number, title: string, description: string | null) => {
+    try {
+      const updatedTodo = await updateTodo(id, { title, description });
+      setTodos(prevTodos =>
+        prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+      );
+      toast({
+        title: "Success",
+        description: "Todo updated successfully",
+      });
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : 'Failed to update todo';
+      toast({ title: "Error", description: message, variant: "destructive" });
+      console.error('Error updating todo:', err);
+      throw err; // Re-throw so TodoItem can handle it
+    }
+  };
+
   const handleDeleteClick = (id: number) => setDeleteId(id);
 
   const handleDeleteConfirm = async () => {
@@ -163,6 +181,7 @@ export function TodoList({ refreshTrigger = 0, filteredTodos, showFiltered = fal
             key={todo.id}
             todo={todo}
             onToggleComplete={handleToggleComplete}
+            onEdit={handleEdit}
             onDelete={handleDeleteClick}
             selected={selectedIds.includes(todo.id)}
             onSelect={() => toggleSelectTodo(todo.id)}

@@ -1,0 +1,531 @@
+# MCP Tool Contracts: AI Todo Assistant
+
+**Feature**: 006-enable-mcp-execution
+**Date**: 2026-02-03
+**Phase**: Phase 1 - Design & Contracts
+
+## Overview
+
+This document defines the contracts for MCP (Model Context Protocol) tools used by the AI agent to manage todo tasks. All tools are stateless and database-backed, following the OpenAI function calling format.
+
+## Tool Architecture
+
+### Design Principles
+
+1. **Stateless**: Tools fetch all required state from the database on each invocation
+2. **Database-backed**: All operations persist to PostgreSQL via SQLModel
+3. **Agent-only**: Tools are invoked exclusively by the AI agent (not exposed to frontend)
+4. **Structured I/O**: All inputs and outputs use well-defined schemas
+5. **Error handling**: Tools return structured error responses for all failure cases
+
+### Tool Registration Format
+
+Tools are registered with the OpenAI Agents SDK using the following format:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "tool_name",
+    "description": "Tool description",
+    "parameters": {
+      "type": "object",
+      "properties": { ... },
+      "required": [ ... ]
+    }
+  }
+}
+```
+
+---
+
+## Tool Specifications
+
+### 1. add_task
+
+**Purpose**: Create a new todo task in the database
+
+**OpenAI Function Definition**:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "add_task",
+    "description": "Create a new todo task for the user. Use this when the user asks to create, add, or make a new task.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title or name of the task (required, max 200 characters)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional detailed description of the task"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user creating the task"
+        }
+      },
+      "required": ["title", "user_id"]
+    }
+  }
+}
+```
+
+**Input Schema**:
+
+```python
+class AddTaskInput(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    user_id: int = Field(..., gt=0)
+```
+
+**Output Schema (Success)**:
+
+```json
+{
+  "task_id": 5,
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "status": "pending",
+  "created_at": "2026-02-03T10:35:00Z"
+}
+```
+
+**Output Schema (Error)**:
+
+```json
+{
+  "error": "Title cannot be empty",
+  "code": "VALIDATION_ERROR"
+}
+```
+
+**Error Codes**:
+- `VALIDATION_ERROR`: Invalid input parameters
+- `DATABASE_ERROR`: Database operation failed
+- `PERMISSION_DENIED`: User not authorized
+
+**Example Usage**:
+
+```
+User: "Create a task to buy groceries"
+Agent calls: add_task(title="Buy groceries", user_id=1)
+Tool returns: {"task_id": 5, "title": "Buy groceries", "status": "pending"}
+Agent responds: "I've created a task 'Buy groceries' for you (Task ID: 5)"
+```
+
+---
+
+### 2. list_tasks
+
+**Purpose**: Retrieve all tasks for a user from the database
+
+**OpenAI Function Definition**:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "list_tasks",
+    "description": "List all todo tasks for the user. Use this when the user asks to see, show, list, or view their tasks.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user whose tasks to retrieve"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed", "all"],
+          "description": "Filter tasks by status (default: all)"
+        }
+      },
+      "required": ["user_id"]
+    }
+  }
+}
+```
+
+**Input Schema**:
+
+```python
+class ListTasksInput(BaseModel):
+    user_id: int = Field(..., gt=0)
+    status: Optional[str] = Field("all", pattern="^(pending|completed|all)$")
+```
+
+**Output Schema (Success)**:
+
+```json
+{
+  "tasks": [
+    {
+      "task_id": 5,
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread",
+      "status": "pending",
+      "created_at": "2026-02-03T10:35:00Z"
+    },
+    {
+      "task_id": 6,
+      "title": "Call dentist",
+      "description": null,
+      "status": "completed",
+      "created_at": "2026-02-02T14:20:00Z"
+    }
+  ],
+  "total": 2,
+  "status_filter": "all"
+}
+```
+
+**Output Schema (Empty)**:
+
+```json
+{
+  "tasks": [],
+  "total": 0,
+  "status_filter": "all"
+}
+```
+
+**Output Schema (Error)**:
+
+```json
+{
+  "error": "User not found",
+  "code": "NOT_FOUND"
+}
+```
+
+**Error Codes**:
+- `NOT_FOUND`: User does not exist
+- `DATABASE_ERROR`: Database operation failed
+- `VALIDATION_ERROR`: Invalid status filter
+
+**Example Usage**:
+
+```
+User: "Show me my tasks"
+Agent calls: list_tasks(user_id=1, status="all")
+Tool returns: {"tasks": [...], "total": 2}
+Agent responds: "You have 2 tasks: 1. Buy groceries (pending), 2. Call dentist (completed)"
+```
+
+---
+
+### 3. update_task
+
+**Purpose**: Modify an existing task in the database
+
+**OpenAI Function Definition**:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "update_task",
+    "description": "Update an existing todo task. Use this when the user asks to modify, change, update, or mark a task as complete.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "integer",
+          "description": "The ID of the task to update"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user who owns the task"
+        },
+        "title": {
+          "type": "string",
+          "description": "New title for the task (optional)"
+        },
+        "description": {
+          "type": "string",
+          "description": "New description for the task (optional)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed"],
+          "description": "New status for the task (optional)"
+        }
+      },
+      "required": ["task_id", "user_id"]
+    }
+  }
+}
+```
+
+**Input Schema**:
+
+```python
+class UpdateTaskInput(BaseModel):
+    task_id: int = Field(..., gt=0)
+    user_id: int = Field(..., gt=0)
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=2000)
+    status: Optional[str] = Field(None, pattern="^(pending|completed)$")
+```
+
+**Output Schema (Success)**:
+
+```json
+{
+  "task_id": 5,
+  "title": "Buy groceries",
+  "description": "Milk, eggs, bread",
+  "status": "completed",
+  "updated_at": "2026-02-03T11:00:00Z"
+}
+```
+
+**Output Schema (Error)**:
+
+```json
+{
+  "error": "Task not found",
+  "code": "NOT_FOUND"
+}
+```
+
+**Error Codes**:
+- `NOT_FOUND`: Task does not exist
+- `PERMISSION_DENIED`: User does not own this task
+- `VALIDATION_ERROR`: Invalid update parameters
+- `DATABASE_ERROR`: Database operation failed
+
+**Example Usage**:
+
+```
+User: "Mark task 5 as complete"
+Agent calls: update_task(task_id=5, user_id=1, status="completed")
+Tool returns: {"task_id": 5, "title": "Buy groceries", "status": "completed"}
+Agent responds: "I've marked task 5 'Buy groceries' as completed"
+```
+
+---
+
+### 4. delete_task
+
+**Purpose**: Permanently remove a task from the database
+
+**OpenAI Function Definition**:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "delete_task",
+    "description": "Delete a todo task permanently. Use this when the user asks to delete, remove, or get rid of a task. Always confirm with the user before deleting.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "integer",
+          "description": "The ID of the task to delete"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "The ID of the user who owns the task"
+        }
+      },
+      "required": ["task_id", "user_id"]
+    }
+  }
+}
+```
+
+**Input Schema**:
+
+```python
+class DeleteTaskInput(BaseModel):
+    task_id: int = Field(..., gt=0)
+    user_id: int = Field(..., gt=0)
+```
+
+**Output Schema (Success)**:
+
+```json
+{
+  "success": true,
+  "task_id": 5,
+  "message": "Task deleted successfully"
+}
+```
+
+**Output Schema (Error)**:
+
+```json
+{
+  "error": "Task not found",
+  "code": "NOT_FOUND"
+}
+```
+
+**Error Codes**:
+- `NOT_FOUND`: Task does not exist
+- `PERMISSION_DENIED`: User does not own this task
+- `DATABASE_ERROR`: Database operation failed
+
+**Example Usage**:
+
+```
+User: "Delete task 5"
+Agent: "Are you sure you want to delete task 5 'Buy groceries'? (yes/no)"
+User: "yes"
+Agent calls: delete_task(task_id=5, user_id=1)
+Tool returns: {"success": true, "task_id": 5}
+Agent responds: "I've deleted task 5 'Buy groceries'"
+```
+
+---
+
+## Implementation Guidelines
+
+### Tool Function Signature
+
+All tool functions follow this pattern:
+
+```python
+def tool_name(input: ToolInput, db: Session) -> dict:
+    """
+    Tool description.
+
+    Args:
+        input: Validated input parameters
+        db: Database session for queries
+
+    Returns:
+        dict: Tool output or error response
+
+    Raises:
+        No exceptions (all errors returned as structured responses)
+    """
+    try:
+        # Validate permissions
+        # Perform database operation
+        # Return success response
+    except Exception as e:
+        # Log error
+        # Return error response
+```
+
+### Error Handling
+
+All tools must:
+1. Catch all exceptions
+2. Log errors for debugging
+3. Return structured error responses
+4. Never raise exceptions to the agent
+
+### Database Transactions
+
+All tools must:
+1. Use database transactions
+2. Commit on success
+3. Rollback on error
+4. Close sessions properly
+
+### Permission Validation
+
+All tools must:
+1. Verify user_id matches authenticated user
+2. Check task ownership for update/delete operations
+3. Return `PERMISSION_DENIED` for unauthorized access
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+
+Test each tool function with:
+- Valid inputs (success cases)
+- Invalid inputs (validation errors)
+- Non-existent resources (not found errors)
+- Permission violations (permission denied errors)
+- Database errors (connection failures, constraint violations)
+
+### Integration Tests
+
+Test tool execution through agent:
+- Agent correctly calls tools based on user intent
+- Tool results are properly returned to agent
+- Agent generates appropriate responses based on tool results
+- Error responses are handled gracefully
+
+### Contract Tests
+
+Verify:
+- Tool definitions match OpenAI function calling format
+- Input schemas match Pydantic models
+- Output schemas match actual tool responses
+- Error codes are consistent across tools
+
+---
+
+## Tool Execution Flow
+
+```
+1. User sends message: "Create a task to buy groceries"
+2. Agent analyzes intent → decides to call add_task
+3. Agent generates tool call:
+   {
+     "name": "add_task",
+     "arguments": {"title": "Buy groceries", "user_id": 1}
+   }
+4. Backend executes tool:
+   - Validates input
+   - Creates Todo record in database
+   - Returns result
+5. Tool returns:
+   {
+     "task_id": 5,
+     "title": "Buy groceries",
+     "status": "pending"
+   }
+6. Agent receives tool result
+7. Agent generates response: "I've created a task 'Buy groceries' for you (Task ID: 5)"
+8. Backend persists conversation:
+   - User message
+   - Tool call
+   - Agent response
+```
+
+---
+
+## Performance Considerations
+
+- Each tool call requires 1-3 database queries
+- Tool execution should complete in <500ms
+- Use database connection pooling
+- Index foreign keys for fast lookups
+- Limit list_tasks results to prevent large responses
+
+---
+
+## Security Considerations
+
+- Always validate user_id matches authenticated user
+- Verify task ownership before update/delete
+- Sanitize all string inputs
+- Use parameterized queries (SQLModel handles this)
+- Log all tool executions for audit trail
+- Rate limit tool calls per user
+
+---
+
+## Next Steps
+
+1. ✅ MCP tool contracts complete
+2. → Create quickstart guide
+3. → Update agent context
+4. → Re-validate Constitution Check
+5. → Proceed to task breakdown

@@ -51,6 +51,36 @@
 - E2E: Playwright or Cypress
 - API: Contract tests with OpenAPI validation
 
+### Phase III AI Agent Architecture (if applicable)
+
+**AI/Agent Layer**:
+- Agent Framework: OpenAI Agents SDK
+- LLM Provider: OpenRouter (NOT OpenAI directly)
+- Recommended Model: Gemini via OpenRouter
+- Tool Protocol: MCP (Model Context Protocol)
+- MCP SDK: Official Python MCP SDK
+- Agent Configuration: OpenRouter-compatible base URL
+- API Key: `OPENROUTER_API_KEY` environment variable
+
+**Agent Requirements**:
+- Stateless design (fetch conversation context from database)
+- Tool-based reasoning (no direct database access)
+- Natural language understanding for task operations
+- Graceful error handling with user-friendly messages
+- Confirmation prompts for destructive actions
+
+**MCP Server Requirements**:
+- Stateless tool design (no in-memory state)
+- Database-backed operations (persist all changes)
+- Structured input/output schemas
+- Agent-only invocation (no direct frontend access)
+
+**Chat API Requirements**:
+- RESTful endpoints for conversation management
+- Message persistence (user and agent messages)
+- Tool call tracking
+- Conversation history retrieval
+
 ### Phase I Single Project (if applicable - deprecated for new features)
 
 **Language/Version**: Python 3.13+
@@ -71,7 +101,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-### Phase II Requirements (if applicable)
+### Phase III Requirements (if applicable)
+- ✅ Uses approved AI/Agent stack (OpenAI Agents SDK, OpenRouter, MCP)
+- ✅ OpenRouter API integration (NOT direct OpenAI API)
+- ✅ `OPENROUTER_API_KEY` environment variable (NOT `OPENAI_API_KEY`)
+- ✅ MCP Server with stateless, database-backed tools
+- ✅ Agent uses MCP tools for ALL task operations (no direct DB access)
+- ✅ Stateless backend (no in-memory conversation state)
+- ✅ Conversation persistence (database-backed)
+- ✅ Message and tool call tracking
+- ✅ Agent behavior contract (confirmations, error handling, no hallucinations)
+- ✅ Chat API endpoints for conversation management
+- ✅ No manual coding (Claude generates all code)
+- ✅ Phase III specifications required (agent.md, mcp-tools.md, chat-api.md, database.md, architecture.md)
+
+### Phase II Requirements (if applicable - maintained in Phase III)
 - ✅ Uses approved technology stack (Next.js, FastAPI, Neon)
 - ✅ API-first architecture (Frontend → API → Database)
 - ✅ Frontend-backend separation (no direct DB access from frontend)
@@ -87,7 +131,7 @@
 - ✅ Python standard library only
 - ✅ No external dependencies
 
-**Note**: Phase I patterns are deprecated. New features should use Phase II architecture.
+**Note**: Phase I patterns are deprecated. New features should use Phase II or Phase III architecture.
 
 ## Project Structure
 

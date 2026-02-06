@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: Chat History API - Get Conversations
+  description: Retrieve all conversations for the authenticated user
+  version: 1.0.0
+
+paths:
+  /api/v1/chat/conversations:
+    get:
+      summary: List user conversations
+      description: |
+        Retrieve all conversations for the authenticated user with pagination support.
+        Conversations are sorted by most recently updated first.
+      operationId: getConversations
+      tags:
+        - Chat History
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of conversations to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of conversations to skip (for pagination)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: sort
+          in: query
+          description: Sort order for conversations
+          required: false
+          schema:
+            type: string
+            enum:
+              - updated_at_desc
+              - updated_at_asc
+              - created_at_desc
+              - created_at_asc
+            default: updated_at_desc
+      responses:
+        '200':
+          description: Successfully retrieved conversation list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - conversations
+                  - total
+                  - limit
+                  - offset
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConversationSummary'
+                  total:
+                    type: integer
+                    description: Total number of conversations for this user
+                    example: 150
+                  limit:
+                    type: integer
+                    description: Number of conversations returned in this response
+                    example: 50
+                  offset:
+                    type: integer
+                    description: Number of conversations skipped
+                    example: 0
+              examples:
+                success:
+                  summary: Successful response with conversations
+                  value:
+                    conversations:
+                      - conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                        created_at: "2026-02-05T10:00:00Z"
+                        updated_at: "2026-02-05T10:30:00Z"
+                        message_count: 10
+                        preview: "Can you help me create a task for..."
+                      - conversation_id: "550e8400-e29b-41d4-a716-446655440001"
+                        created_at: "2026-02-04T15:20:00Z"
+                        updated_at: "2026-02-04T15:45:00Z"
+                        message_count: 6
+                        preview: "Show me all my completed tasks"
+                    total: 150
+                    limit: 50
+                    offset: 0
+                empty:
+                  summary: No conversations found
+                  value:
+                    conversations: []
+                    total: 0
+                    limit: 50
+                    offset: 0
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Not authenticated"
+        '422':
+          description: Unprocessable Entity - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Invalid limit value. Must be between 1 and 100."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Database connection error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from authentication system
+
+  schemas:
+    ConversationSummary:
+      type: object
+      required:
+        - conversation_id
+        - created_at
+        - updated_at
+        - message_count
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the conversation
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        created_at:
+          type: string
+          format: date-time
+          description: When the conversation was created (UTC)
+          example: "2026-02-05T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the conversation was last updated (UTC)
+          example: "2026-02-05T10:30:00Z"
+        message_count:
+          type: integer
+          description: Total number of messages in this conversation
+          minimum: 0
+          example: 10
+        preview:
+          type: string
+          description: Preview text from the last message (first 100 characters)
+          maxLength: 100
+          example: "Can you help me create a task for..."
+          nullable: true
+
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Not authenticated"

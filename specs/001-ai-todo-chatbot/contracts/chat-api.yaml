@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: AI Todo Chatbot API
+  description: |
+    Chat API for AI-powered todo management using natural language.
+
+    This API provides a single endpoint for conversational task management.
+    The AI agent interprets user intents and executes task operations through MCP tools.
+
+    **Key Features**:
+    - Natural language task management
+    - Stateless backend (conversation context reconstructed from database)
+    - Tool-based reasoning (agent uses MCP tools for all task operations)
+    - Conversation persistence across sessions
+    - Tool call transparency and auditability
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.example.com/api/v1
+    description: Production server
+
+tags:
+  - name: chat
+    description: AI chat operations for todo management
+
+paths:
+  /chat:
+    post:
+      tags:
+        - chat
+      summary: Send message to AI assistant
+      description: |
+        Send a message to the AI assistant for todo management.
+
+        **Behavior**:
+        - If `conversation_id` is not provided, creates a new conversation
+        - If `conversation_id` is provided, continues existing conversation
+        - Agent reconstructs conversation context from database (last 20 messages)
+        - Agent interprets user intent and invokes MCP tools as needed
+        - All tool calls are logged and returned in the response
+
+        **Authentication**: Requires valid JWT token in Authorization header
+
+        **Performance**: Response time <3 seconds under normal load
+      operationId: sendChatMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              newConversation:
+                summary: Start new conversation
+                value:
+                  message: "Create a task to buy groceries tomorrow"
+              continueConversation:
+                summary: Continue existing conversation
+                value:
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                  message: "Mark the groceries task as complete"
+              listTasks:
+                summary: List tasks
+                value:
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                  message: "What tasks do I have?"
+      responses:
+        '200':
+          description: Message processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              examples:
+                taskCreated:
+                  summary: Task created successfully
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    response: "I've created a task for you: 'Buy groceries tomorrow'. Is there anything else you'd like me to help with?"
+                    tool_calls:
+                      - tool_call_id: "call_abc123"
+                        name: "create_task"
+                        input:
+                          title: "Buy groceries tomorrow"
+                          description: null
+                          status: "pending"
+                        output:
+                          task_id: 42
+                          success: true
+                          message: "Created task: Buy groceries tomorrow"
+                    timestamp: "2026-02-02T14:30:00Z"
+                taskCompleted:
+                  summary: Task marked complete
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    response: "Great! I've marked 'Buy groceries tomorrow' as complete."
+                    tool_calls:
+                      - tool_call_id: "call_def456"
+                        name: "update_task"
+                        input:
+                          task_id: 42
+                          status: "completed"
+                        output:
+                          task_id: 42
+                          success: true
+                          message: "Updated task status to completed"
+                    timestamp: "2026-02-02T14:35:00Z"
+                tasksList:
+                  summary: Tasks listed
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    response: "You have 3 tasks:\n1. Buy groceries tomorrow (pending)\n2. Call mom (pending)\n3. Finish report (completed)"
+                    tool_calls:
+                      - tool_call_id: "call_ghi789"
+                        name: "list_tasks"
+                        input:
+                          status: "all"
+                        output:
+                          tasks:
+                            - id: 42
+                              title: "Buy groceries tomorrow"
+                              completed: false
+                            - id: 43
+                              title: "Call mom"
+                              completed: false
+                            - id: 44
+                              title: "Finish report"
+                              completed: true
+                          count: 3
+                    timestamp: "2026-02-02T14:40:00Z"
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyMessage:
+                  summary: Empty message
+                  value:
+                    detail: "Message cannot be empty"
+        '401':
+          description: Unauthorized - Invalid or missing authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  summary: Missing JWT token
+                  value:
+                    detail: "Not authenticated"
+        '404':
+          description: Not found - Conversation does not exist or user does not own it
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conversationNotFound:
+                  summary: Conversation not found
+                  value:
+                    detail: "Conversation not found or you do not have access to it"
+        '422':
+          description: Unprocessable entity - Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidConversationId:
+                  summary: Invalid conversation_id format
+                  value:
+                    detail: "Invalid conversation_id format. Must be a valid UUID."
+                messageTooLong:
+                  summary: Message exceeds maximum length
+                  value:
+                    detail: "Message exceeds maximum length of 10,000 characters"
+        '500':
+          description: Internal server error - AI agent failure or database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                agentTimeout:
+                  summary: Agent timeout
+                  value:
+                    detail: "The AI assistant is taking too long to respond. Please try again."
+                unexpectedError:
+                  summary: Unexpected error
+                  value:
+                    detail: "An unexpected error occurred. Please try again."
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from authentication endpoint
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: |
+            Optional conversation ID to continue existing conversation.
+            If not provided, a new conversation will be created.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: User's message text (1-10,000 characters)
+          example: "Create a task to buy groceries tomorrow"
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+        - timestamp
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID (new or existing)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        response:
+          type: string
+          description: AI assistant's response text
+          example: "I've created a task for you: 'Buy groceries tomorrow'. Is there anything else you'd like me to help with?"
+        tool_calls:
+          type: array
+          description: Array of MCP tool invocations made by the agent
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        timestamp:
+          type: string
+          format: date-time
+          description: Response timestamp (ISO 8601 UTC)
+          example: "2026-02-02T14:30:00Z"
+
+    ToolCall:
+      type: object
+      required:
+        - tool_call_id
+        - name
+        - input
+        - output
+      properties:
+        tool_call_id:
+          type: string
+          description: Unique identifier for this tool call
+          example: "call_abc123"
+        name:
+          type: string
+          enum:
+            - create_task
+            - list_tasks
+            - get_task
+            - update_task
+            - delete_task
+          description: Name of the MCP tool invoked
+          example: "create_task"
+        input:
+          type: object
+          description: Input parameters passed to the tool
+          additionalProperties: true
+          example:
+            title: "Buy groceries tomorrow"
+            description: null
+            status: "pending"
+        output:
+          type: object
+          description: Output returned by the tool
+          additionalProperties: true
+          example:
+            task_id: 42
+            success: true
+            message: "Created task: Buy groceries tomorrow"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Message cannot be empty"

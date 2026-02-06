@@ -63,3 +63,7 @@ app.include_router(todos_router, prefix="/api", tags=["tasks"])
 # Register users router
 from src.routers.users import router as users_router
 app.include_router(users_router, prefix=f"/api/{settings.API_VERSION}", tags=["users"])
+
+# Register chat router (Phase III)
+from src.routers.chat import router as chat_router
+app.include_router(chat_router, prefix=f"/api/{settings.API_VERSION}", tags=["chat"])

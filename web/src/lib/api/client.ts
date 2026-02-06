@@ -7,8 +7,8 @@
 
 import { getJwtToken } from '@/lib/auth/jwt-manager';
 
-// Backend API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
+// Backend API base URL (already includes /api/v1)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/v1';
 
 export class ApiError extends Error {
   constructor(
@@ -41,8 +41,8 @@ export async function apiClient<T>(
     throw new ApiError('Not authenticated', 401);
   }
 
-  // Construct full URL without /v1 versioning
-  const url = `${API_BASE_URL}/api${endpoint}`;
+  // Construct full URL (API_BASE_URL already includes /api/v1)
+  const url = `${API_BASE_URL}${endpoint}`;
   console.log('Calling API URL:', url); // Debug log
 
   const config: RequestInit = {

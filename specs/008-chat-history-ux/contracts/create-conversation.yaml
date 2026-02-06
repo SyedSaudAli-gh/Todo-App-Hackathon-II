@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Chat History API - Create Conversation
+  description: Explicitly create a new conversation
+  version: 1.0.0
+
+paths:
+  /api/v1/chat/conversations:
+    post:
+      summary: Create new conversation
+      description: |
+        Explicitly create a new conversation for the authenticated user.
+        This is an alternative to implicit conversation creation in POST /api/v1/chat.
+        Use this when you want to create a conversation before sending the first message.
+      operationId: createConversation
+      tags:
+        - Chat History
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Optional request body (currently empty, reserved for future use)
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '201':
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationCreated'
+              example:
+                conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                created_at: "2026-02-05T10:00:00Z"
+                updated_at: "2026-02-05T10:00:00Z"
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Not authenticated"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: "Database connection error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from authentication system
+
+  schemas:
+    ConversationCreated:
+      type: object
+      required:
+        - conversation_id
+        - created_at
+        - updated_at
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the newly created conversation
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        created_at:
+          type: string
+          format: date-time
+          description: When the conversation was created (UTC)
+          example: "2026-02-05T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the conversation was last updated (UTC)
+          example: "2026-02-05T10:00:00Z"
+
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Not authenticated"
