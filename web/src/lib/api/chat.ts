@@ -7,7 +7,7 @@ import {
   MessageListResponse,
 } from '@/types/chat';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001').replace(/\/$/, ''); // Remove trailing slash
 
 /**
  * Utility: Check if error is an authentication error
