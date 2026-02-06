@@ -27,7 +27,7 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # Import SQLModel metadata from models
-from src.models.todo import Todo
+from models.todo import Todo
 from sqlmodel import SQLModel
 
 target_metadata = SQLModel.metadata

@@ -7,7 +7,7 @@ Uses service layer for consistency with REST API.
 """
 from typing import Dict, Any, Optional
 from sqlmodel import Session
-from src.services import todo_service
+from services import todo_service
 
 
 # OpenAI function schema for get_task tool

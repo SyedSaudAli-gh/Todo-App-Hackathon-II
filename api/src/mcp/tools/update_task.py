@@ -7,8 +7,8 @@ Uses service layer for consistency with REST API.
 """
 from typing import Dict, Any, Optional
 from sqlmodel import Session
-from src.services import todo_service
-from src.schemas.todo import TodoUpdate
+from services import todo_service
+from schemas.todo import TodoUpdate
 
 
 # OpenAI function schema for update_task tool

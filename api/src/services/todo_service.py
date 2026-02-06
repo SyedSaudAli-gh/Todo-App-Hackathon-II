@@ -4,8 +4,8 @@ Todo service layer for business logic and database operations.
 from typing import List, Optional
 from datetime import datetime
 from sqlmodel import Session, select
-from src.models.todo import Todo
-from src.schemas.todo import TodoCreate, TodoUpdate
+from models.todo import Todo
+from schemas.todo import TodoCreate, TodoUpdate
 
 
 async def create_todo(session: Session, todo_data: TodoCreate, user_id: str) -> Todo:

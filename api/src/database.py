@@ -2,7 +2,7 @@
 Database connection and session management using SQLModel.
 """
 from sqlmodel import create_engine, Session, SQLModel
-from src.config import settings
+from config import settings
 
 # Create database engine
 engine = create_engine(

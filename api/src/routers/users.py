@@ -7,10 +7,10 @@ including authenticated user statistics retrieval.
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import Session
-from src.database import get_session
-from src.dependencies import get_current_user_id
-from src.services.stats_service import get_user_stats
-from src.schemas.user_stats import UserStatsResponse
+from database import get_session
+from dependencies import get_current_user_id
+from services.stats_service import get_user_stats
+from schemas.user_stats import UserStatsResponse
 
 # Configure logger
 logger = logging.getLogger(__name__)

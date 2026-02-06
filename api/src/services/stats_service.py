@@ -11,7 +11,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Dict
 from sqlmodel import Session, select, func, case
-from src.models.todo import Todo
+from models.todo import Todo
 
 # Configure logger
 logger = logging.getLogger(__name__)

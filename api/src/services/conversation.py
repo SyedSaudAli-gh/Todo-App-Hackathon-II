@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import UUID, uuid4
 from sqlmodel import Session, select
-from src.models.conversation import Conversation
-from src.models.message import Message, MessageRole
+from models.conversation import Conversation
+from models.message import Message, MessageRole
 
 
 class ConversationService:

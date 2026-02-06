@@ -8,7 +8,7 @@ import logging
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from src.core.security import validate_jwt_token, extract_user_id_from_jwt
+from core.security import validate_jwt_token, extract_user_id_from_jwt
 
 logger = logging.getLogger(__name__)
 

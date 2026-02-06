@@ -8,7 +8,7 @@ import logging
 from typing import Optional
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
-from src.config import settings
+from config import settings
 
 logger = logging.getLogger(__name__)
 
