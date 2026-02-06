@@ -13,11 +13,11 @@ from sqlmodel import Session
 
 from .config import agent_config
 from .errors import AIAgentTimeoutError
-from ..mcp.tools.create_task import create_task_tool
-from ..mcp.tools.list_tasks import list_tasks_tool
-from ..mcp.tools.get_task import get_task_tool
-from ..mcp.tools.update_task import update_task_tool
-from ..mcp.tools.delete_task import delete_task_tool
+from ..mcp.tools.create_task import create_task
+from ..mcp.tools.list_tasks import list_tasks
+from ..mcp.tools.get_task import get_task
+from ..mcp.tools.update_task import update_task
+from ..mcp.tools.delete_task import delete_task
 
 logger = logging.getLogger(__name__)
 
@@ -208,11 +208,11 @@ class AIAgentOrchestrator:
     ) -> Any:
         """Execute a tool by name with given arguments."""
         tool_map = {
-            "create_task": create_task_tool,
-            "list_tasks": list_tasks_tool,
-            "get_task": get_task_tool,
-            "update_task": update_task_tool,
-            "delete_task": delete_task_tool
+            "create_task": create_task,
+            "list_tasks": list_tasks,
+            "get_task": get_task,
+            "update_task": update_task,
+            "delete_task": delete_task
         }
 
         tool_func = tool_map.get(tool_name)
