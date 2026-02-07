@@ -1,32 +1,33 @@
 <!--
 Sync Impact Report:
-- Version change: 2.0.0 → 3.0.0 (MAJOR - Phase III AI Agent Architecture)
+- Version change: 3.0.0 → 4.0.0 (MAJOR - Phase IV Local Kubernetes Deployment)
 - Modified principles:
-  - Principle II: "Phase II Integrity" → "Phase III Integrity" (AI Agent + MCP architecture)
-  - Principle VI: "Technology Stack Compliance" → expanded with AI framework requirements
+  - Principle II: "Phase III Integrity" → "Phase IV Integrity" (Kubernetes deployment architecture)
+  - Principle VI: "Technology Stack Compliance" → expanded with Kubernetes/Docker/Helm requirements
 - Added sections:
-  - AI Framework & API Key Constraint (new Principle X)
-  - MCP Architecture Requirement (new Principle XI)
-  - Stateless Backend Rule (new Principle XII)
-  - Agent Behavior Contract (new Principle XIII)
-  - Folder Ownership & Review Policy (new section)
-  - Phase III Objective (new section)
-  - Phase III Technology Stack (AI/Agent layer)
-  - Phase III Documentation Requirements (agent.md, mcp-tools.md, chat-api.md, etc.)
+  - Kubernetes Deployment Architecture (new Principle XIV)
+  - Docker Containerization Standards (new Principle XV)
+  - Helm Chart Requirements (new Principle XVI)
+  - AI DevOps Automation (new Principle XVII)
+  - Deployment Idempotency Rule (new Principle XVIII)
+  - Phase IV Objective (new section)
+  - Phase IV Technology Stack (Kubernetes/Docker/Helm/AI DevOps layer)
+  - Phase IV Documentation Requirements (helm charts, deployment scripts, cluster configs)
+  - Phase IV Quality Standards (deployment, observability, resource management)
 - Removed sections:
-  - None (Phase III builds on Phase II)
+  - None (Phase IV builds on Phase II and Phase III)
 - Templates requiring updates:
-  - .specify/templates/spec-template.md ⚠ pending (add AI agent, MCP, chat API sections)
-  - .specify/templates/plan-template.md ⚠ pending (add Phase III architecture sections)
-  - .specify/templates/tasks-template.md ⚠ pending (add Phase III task categories: agent, MCP, chat)
-  - .specify/templates/commands/*.md ⚠ pending (update for Phase III context)
+  - .specify/templates/spec-template.md ⚠ pending (add Kubernetes deployment sections)
+  - .specify/templates/plan-template.md ⚠ pending (add Phase IV deployment architecture sections)
+  - .specify/templates/tasks-template.md ⚠ pending (add Phase IV task categories: docker, helm, k8s-deploy, cluster-health)
+  - .specify/templates/commands/*.md ⚠ pending (update for Phase IV context)
 - Follow-up TODOs:
-  - Update all templates to reflect Phase III requirements
-  - Create Phase III implementation guidelines
-  - Review backend code for AI agent integration points
-  - Validate MCP server architecture against constitution
+  - Update all templates to reflect Phase IV requirements
+  - Create Phase IV implementation guidelines
+  - Create agent SKILL.md files for deployment tasks
+  - Validate Helm charts and Kubernetes manifests against constitution
 -->
-# Phase III Constitution - Todo AI Chatbot (Agentic + MCP Architecture)
+# Phase IV Constitution - Todo AI Chatbot (Local Kubernetes Deployment)
 
 ## Core Principles
 
@@ -42,47 +43,61 @@ All implementation must strictly follow approved specifications. No implementati
 
 ⚠️ Skipping or merging steps is NOT allowed.
 
-### II. Phase III Integrity
-Phase III introduces **stateless, AI-powered Todo Chatbot** architecture with agent orchestration. The application MUST use:
+### II. Phase IV Integrity
+Phase IV introduces **Local Kubernetes Deployment** with AI-driven DevOps automation. The application MUST use:
 
 **Frontend** (Phase II - maintained):
 - Next.js 15+ with React 19+, TypeScript 5+, and Tailwind CSS 3+
 - OpenAI ChatKit UI for chat interface
 - Stateless chat client with auth integration
+- **Dockerized** for Kubernetes deployment
 
-**Backend** (Phase II + Phase III):
+**Backend** (Phase II + Phase III - maintained):
 - FastAPI 0.100+ with Python 3.13+, Pydantic v2, and SQLModel
-- **OpenAI Agents SDK** (MANDATORY framework for AI agent)
-- **MCP (Model Context Protocol) Server** for tool exposure
+- OpenAI Agents SDK (MANDATORY framework for AI agent)
+- MCP (Model Context Protocol) Server for tool exposure
 - Stateless architecture with database-backed conversation memory
+- **Dockerized** for Kubernetes deployment
 
 **Database** (Phase II - maintained):
 - Neon PostgreSQL (serverless) for all persistent storage
 - Conversation and message persistence
 - Tool call history tracking
 
-**AI/Agent Layer** (Phase III - NEW):
+**AI/Agent Layer** (Phase III - maintained):
 - OpenAI Agents SDK configured for OpenRouter API
 - MCP Server exposing stateless, database-backed task tools
 - Natural language task management via AI agent
 - Tool-based reasoning and agent orchestration
 
-Phase III explicitly **FORBIDS**:
-- Manual coding by humans (Claude generates ALL code)
-- Direct OpenAI API usage (use OpenRouter instead)
-- In-memory agent state (use database for conversations)
-- Direct database access by agent logic (use MCP tools only)
-- Hallucinated task state (agent must use MCP tools)
-- Phase I patterns (in-memory storage, CLI, positional indexes)
+**Deployment Layer** (Phase IV - NEW):
+- **Kubernetes**: Minikube for local cluster orchestration
+- **Helm**: Chart-based deployment management
+- **Docker**: Containerization with Gordon AI assistance
+- **kubectl-ai**: AI-powered Kubernetes operations
+- **Kagent**: AI agent for cluster health and optimization
+- **AI DevOps**: Fully automated deployment via Claude Agents and Skills
+
+Phase IV explicitly **FORBIDS**:
+- Manual deployment steps (Claude Agents automate ALL deployment)
+- Cloud deployments (local Minikube only)
+- Manual Helm chart creation (use helm-chart-generator agent)
+- Manual Docker commands (use docker-build-optimizer and docker-container-runner agents)
+- Cluster resource limits exceeded (max 4 CPUs, 8GB RAM)
+- Non-idempotent deployments (must be repeatable)
+- Deployments without health checks
+- Missing observability (logs, metrics, pod status)
 
 ### III. Reusability and Extension
-Design must support future phases (Phase IV+) through:
+Design must support future phases (Phase V+) through:
 - API versioning strategy (v1, v2, etc.)
 - Database migration support with Alembic
 - Modular architecture enabling feature additions
 - Clear contracts between layers (frontend ↔ API ↔ agent ↔ MCP ↔ database)
 - Backward compatibility within major API versions
 - Agent behavior extensibility through MCP tool additions
+- **Deployment modularity** through Helm charts and reusable agents
+- **Infrastructure as Code** for reproducible environments
 
 ### IV. Determinism and Testability
 All components must be predictable and testable:
@@ -92,6 +107,8 @@ All components must be predictable and testable:
 - **Agent**: Behavior tests for tool invocation and error handling
 - **MCP Server**: Tool contract tests with stateless guarantees
 - **End-to-End**: Critical user journeys tested across all layers including AI agent
+- **Deployment**: Helm chart validation, Docker image verification, cluster health checks
+- **Infrastructure**: Kubernetes manifest validation, resource limit verification
 - All features must have clear, testable acceptance criteria
 
 ### V. Test-First Development (NON-NEGOTIABLE)
@@ -101,10 +118,11 @@ TDD remains mandatory across all layers:
 - **Database**: Write schema tests → Create migrations → Tests pass → Refactor
 - **Agent**: Write behavior tests → Implement agent logic → Tests pass → Refactor
 - **MCP Server**: Write tool contract tests → Implement tools → Tests pass → Refactor
+- **Deployment**: Write deployment validation → Create Helm charts → Validation passes → Refactor
 - Red-Green-Refactor cycle strictly enforced at every layer
 
 ### VI. Technology Stack Compliance
-Phase III requires specific technologies to ensure consistency and quality:
+Phase IV requires specific technologies to ensure consistency and quality:
 
 **Approved Frontend Stack** (Phase II - maintained):
 - Next.js 15+ (React framework with SSR/SSG)
@@ -113,32 +131,41 @@ Phase III requires specific technologies to ensure consistency and quality:
 - Tailwind CSS 3+ (styling)
 - OpenAI ChatKit (chat UI components)
 
-**Approved Backend Stack** (Phase II + Phase III):
+**Approved Backend Stack** (Phase II + Phase III - maintained):
 - FastAPI 0.100+ (Python web framework)
 - Python 3.13+ (language)
 - Pydantic v2 (validation)
 - SQLModel (ORM combining SQLAlchemy + Pydantic)
-- **OpenAI Agents SDK** (AI agent framework)
-- **MCP SDK** (Model Context Protocol server)
+- OpenAI Agents SDK (AI agent framework)
+- MCP SDK (Model Context Protocol server)
 
 **Approved Database** (Phase II - maintained):
 - Neon PostgreSQL (serverless, managed)
 - Alembic (migrations)
 
-**Approved AI/Agent Stack** (Phase III - NEW):
+**Approved AI/Agent Stack** (Phase III - maintained):
 - OpenAI Agents SDK (agent orchestration framework)
 - OpenRouter API (LLM provider - NOT OpenAI directly)
 - MCP SDK (tool protocol implementation)
 - Gemini models via OpenRouter (recommended LLM)
 
+**Approved Deployment Stack** (Phase IV - NEW):
+- **Container Runtime**: Docker Desktop (Windows 10+)
+- **Orchestration**: Minikube (local Kubernetes cluster)
+- **Package Manager**: Helm 3+ (chart-based deployment)
+- **AI DevOps Tools**: kubectl-ai, Kagent, Gordon
+- **Deployment Automation**: Claude Agents with dedicated Skills
+- **Environment**: Windows 10+ with PowerShell or Bash
+
 **Prohibited**:
-- Manual coding by humans (Claude generates ALL code)
-- Direct OpenAI API usage (use OpenRouter with compatible base URL)
-- `OPENAI_API_KEY` environment variable (use `OPENROUTER_API_KEY`)
-- In-memory agent state (use database)
-- Direct database access from agent logic (use MCP tools)
-- Phase I patterns (in-memory storage, CLI interfaces, positional indexes)
-- Unapproved frameworks or libraries without ADR justification
+- Manual deployment steps (Claude Agents automate ALL)
+- Cloud Kubernetes services (AWS EKS, GKE, AKS)
+- Manual Helm chart creation without helm-chart-generator agent
+- Manual Docker builds without docker-build-optimizer agent
+- Direct kubectl commands without kubectl-ai or k8s-deploy-agent
+- Cluster resources exceeding 4 CPUs and 8GB RAM
+- Non-idempotent deployment scripts
+- Deployments without health checks or observability
 
 ### VII. API-First Architecture
 All data operations MUST go through the REST API layer:
@@ -196,7 +223,7 @@ Clear separation of concerns between layers:
 - Persist conversations, messages, and tool calls
 
 ### IX. Data Integrity and Security
-Phase III maintains Phase II security with additional agent-specific requirements:
+Phase IV maintains Phase II and Phase III security with additional deployment-specific requirements:
 
 **Data Integrity**:
 - All data persisted to Neon PostgreSQL
@@ -206,6 +233,7 @@ Phase III maintains Phase II security with additional agent-specific requirement
 - Data survives application restarts
 - Conversation history persisted across sessions
 - Tool call history tracked for debugging
+- **Persistent volumes** for stateful data in Kubernetes
 
 **Security**:
 - Environment variables for secrets (never commit .env files)
@@ -217,6 +245,9 @@ Phase III maintains Phase II security with additional agent-specific requirement
 - Proper error handling (no sensitive data in error messages)
 - Agent prompt injection prevention
 - Tool access control (agent-only invocation)
+- **Kubernetes Secrets** for sensitive configuration
+- **Network Policies** for pod-to-pod communication
+- **Resource Quotas** to prevent resource exhaustion
 
 ### X. AI Framework & API Key Constraint
 
@@ -291,67 +322,170 @@ AI Agent MUST:
 - ❌ Exposing technical error details to users
 - ❌ Ignoring tool errors
 
-### XIV. Folder Ownership & Review Policy
+### XIV. Kubernetes Deployment Architecture
 
-Claude MUST respect project boundaries:
+Claude MUST implement:
+- **Minikube** for local Kubernetes cluster
+- **Helm Charts** for deployment management
+- **Minimum 2 replicas** for frontend and backend services
+- **Resource limits** (max 4 CPUs, 8GB RAM total)
+- **Health checks** (liveness and readiness probes)
+- **Service discovery** (ClusterIP services)
+- **Ingress** for external access (if applicable)
+- **Namespace isolation** (todo namespace recommended)
 
-**`/api` (Backend)**:
-- FastAPI application
-- OpenAI Agents SDK integration
-- MCP Server implementation
-- Database models (SQLModel)
-- Chat API endpoints
-- Conversation and message persistence
+**Kubernetes Manifests MUST include**:
+- Deployments with replica configuration
+- Services for pod discovery
+- ConfigMaps for non-sensitive configuration
+- Secrets for sensitive data (API keys, database credentials)
+- Resource requests and limits
+- Health check probes
+- Labels and selectors for pod management
 
-**`/web` (Frontend)**:
-- Next.js application
-- OpenAI ChatKit UI
-- Stateless chat client
-- Auth integration
-- Todo UI components
+**Deployment Requirements**:
+- Idempotent (can be run multiple times safely)
+- Complete in under 15 minutes on standard machines
+- No manual intervention required
+- Automated via Claude Agents and Skills
+- Full observability (logs, metrics, pod status)
 
-**Review Requirements**:
-Claude MUST:
-- Review existing backend + frontend code before Phase III implementation
-- Identify architectural or spec violations
-- Fix violations ONLY through generated code (no advice-only answers)
-- Ensure Phase II foundations remain intact
-- Validate Phase III additions align with constitution
+### XV. Docker Containerization Standards
 
-### XV. Spec-First Documentation Requirement
+Claude MUST implement:
+- **Multi-stage builds** for optimized image sizes
+- **Non-root users** for security
+- **Health checks** in Dockerfiles
+- **Environment variable** configuration
+- **Layer caching** optimization
+- **Gordon AI assistance** for Docker commands
 
-All Phase III work MUST produce:
+**Dockerfile Requirements**:
+- Frontend: Node.js base image, Next.js build, production server
+- Backend: Python base image, FastAPI dependencies, production server
+- Minimal image size (use alpine or slim variants)
+- No secrets in image layers
+- Proper .dockerignore files
 
-**Required Specifications**:
-- `/specs/phase-iii/agent.md` - Agent behavior specification
-- `/specs/phase-iii/mcp-tools.md` - MCP tool contracts
-- `/specs/phase-iii/chat-api.md` - Chat API endpoints
-- `/specs/phase-iii/database.md` - Conversation/message schema
-- `/specs/phase-iii/architecture.md` - System architecture overview
+**Docker Image Management**:
+- Version tagging (e.g., v1.0.0, latest)
+- Local registry or Minikube image loading
+- Image verification before deployment
+- Automated builds via docker-build-optimizer agent
 
-**Code without matching spec = INVALID**.
+### XVI. Helm Chart Requirements
 
-Each specification MUST include:
-- User stories and acceptance criteria
-- API contracts (request/response models)
-- Data models (database schema)
-- Error handling strategies
-- Test scenarios
+Claude MUST implement:
+- **Helm 3+** chart structure
+- **Values.yaml** for configuration
+- **Templates** for Kubernetes manifests
+- **Chart.yaml** with metadata
+- **Dependencies** management (if applicable)
 
-## Phase III Objective
+**Helm Chart Structure**:
+```
+helm/
+├── todo-frontend/
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── templates/
+│       ├── deployment.yaml
+│       ├── service.yaml
+│       ├── configmap.yaml
+│       └── ingress.yaml (optional)
+└── todo-backend/
+    ├── Chart.yaml
+    ├── values.yaml
+    └── templates/
+        ├── deployment.yaml
+        ├── service.yaml
+        ├── configmap.yaml
+        └── secret.yaml
+```
 
-Build a **stateless, AI-powered Todo Chatbot** that allows users to manage tasks via **natural language**, using:
+**Helm Chart Requirements**:
+- Parameterized configuration via values.yaml
+- Resource limits configurable
+- Replica count configurable
+- Image tags configurable
+- Environment variables configurable
+- Generated via helm-chart-generator agent
 
-- OpenAI Agents SDK (framework)
-- MCP (Model Context Protocol) Server
-- Stateless FastAPI backend
-- Persistent database-backed conversation memory
+### XVII. AI DevOps Automation
 
-The system must demonstrate **tool-based reasoning**, **agent orchestration**, and **clean separation of concerns**.
+Claude MUST use:
+- **Claude Agents** for all deployment tasks
+- **Skills** (SKILL.md) for each agent defining precise tasks
+- **kubectl-ai** for AI-powered Kubernetes operations
+- **Kagent** for cluster health monitoring and optimization
+- **Gordon** for Docker command assistance
 
-## Phase III Technology Stack
+**Required Agents and Skills**:
+- **docker-build-optimizer**: Build and optimize Docker images
+- **docker-container-runner**: Run and test containers locally
+- **helm-chart-generator**: Generate Helm charts for services
+- **k8s-deploy-agent**: Deploy to Minikube using Helm
+- **k8s-cleanup**: Clean up Kubernetes resources before redeployment
+- **cluster-health-monitor**: Monitor pod status, logs, and metrics
 
-### AI/Agent Layer (NEW)
+**Agent Requirements**:
+- Each agent has dedicated SKILL.md file
+- Agents run independently or chained
+- No manual coding required
+- Full automation from build to deployment
+- Error handling and retry logic
+- Observability and logging
+
+### XVIII. Deployment Idempotency Rule
+
+All deployment operations MUST be idempotent:
+- Running deployment twice produces same result
+- No residual state from previous deployments
+- Clean environment reset capability
+- Reproducible deployments across machines
+
+**Idempotency Requirements**:
+- Helm upgrades use `--install` flag (install if not exists)
+- Kubernetes resources use declarative configuration
+- Docker images use consistent tags
+- Database migrations are idempotent
+- Cleanup scripts remove all resources completely
+- Environment can be reset to clean state
+
+**Prohibited**:
+- ❌ Imperative kubectl commands that fail on re-run
+- ❌ Stateful deployment scripts
+- ❌ Manual cleanup steps
+- ✅ **Use instead**: Declarative Helm charts and automated cleanup agents
+
+## Phase IV Objective
+
+Deploy the **Todo AI Chatbot** (Phase II + Phase III) to a **local Kubernetes cluster** using:
+
+- **Minikube** for orchestration
+- **Helm Charts** for deployment management
+- **Docker** for containerization
+- **AI DevOps** tools (kubectl-ai, Kagent, Gordon)
+- **Claude Agents** for full automation
+
+The deployment must be:
+- **Fully automated** (no manual steps)
+- **Idempotent** (repeatable)
+- **Observable** (logs, metrics, health checks)
+- **Resource-efficient** (max 4 CPUs, 8GB RAM)
+- **Fast** (under 15 minutes)
+
+## Phase IV Technology Stack
+
+### Deployment Layer (NEW)
+- **Container Runtime**: Docker Desktop (Windows 10+)
+- **Orchestration**: Minikube (local Kubernetes)
+- **Package Manager**: Helm 3+
+- **AI DevOps**: kubectl-ai, Kagent, Gordon
+- **Automation**: Claude Agents with Skills
+- **Environment**: Windows 10+ (PowerShell or Bash)
+
+### AI/Agent Layer (Phase III - maintained)
 - **Agent Framework**: OpenAI Agents SDK
 - **LLM Provider**: OpenRouter (NOT OpenAI directly)
 - **Recommended Model**: Gemini via OpenRouter
@@ -360,7 +494,7 @@ The system must demonstrate **tool-based reasoning**, **agent orchestration**, a
 - **Agent Configuration**: OpenRouter-compatible base URL
 - **API Key**: `OPENROUTER_API_KEY` environment variable
 
-### Backend (Phase II + Phase III)
+### Backend (Phase II + Phase III - maintained)
 - **Framework**: FastAPI 0.100+
 - **Language**: Python 3.13+
 - **Validation**: Pydantic v2
@@ -369,7 +503,7 @@ The system must demonstrate **tool-based reasoning**, **agent orchestration**, a
 - **Agent SDK**: OpenAI Agents SDK
 - **MCP Server**: Official MCP SDK
 - **Documentation**: OpenAPI/Swagger (auto-generated)
-- **Deployment**: Railway, Render, or similar
+- **Containerization**: Docker
 
 ### Frontend (Phase II - maintained)
 - **Framework**: Next.js 15+ with App Router
@@ -379,70 +513,85 @@ The system must demonstrate **tool-based reasoning**, **agent orchestration**, a
 - **Styling**: Tailwind CSS 3+ (utility-first)
 - **State Management**: React hooks, Context API
 - **HTTP Client**: fetch API or axios
-- **Deployment**: Vercel (recommended)
+- **Containerization**: Docker
 
-### Database (Phase II - maintained + Phase III extensions)
+### Database (Phase II - maintained)
 - **Database**: Neon PostgreSQL (serverless)
 - **ORM**: SQLModel
 - **Migrations**: Alembic
 - **Primary Keys**: UUID or auto-increment integers
 - **Relationships**: Foreign keys with CASCADE/RESTRICT
 - **Indexes**: Strategic indexing for query performance
-- **Phase III Tables**: Conversations, Messages, ToolCalls (NEW)
+- **Phase III Tables**: Conversations, Messages, ToolCalls
 
-## Phase III Quality Standards
+## Phase IV Quality Standards
 
-### Agent Design Standards
-- Natural language understanding for task operations
-- Tool-based reasoning (no direct database access)
-- Graceful error handling with user-friendly messages
-- Confirmation prompts for destructive actions
-- Conversation context maintenance across messages
-- Stateless design (fetch context from database)
+### Deployment Standards
+- Helm charts syntactically correct and validated
+- Kubernetes manifests pass validation
+- Docker images build successfully
+- Containers start without errors
+- Health checks pass for all pods
+- Services accessible within cluster
+- Resource limits respected (4 CPUs, 8GB RAM)
+- Deployment completes in under 15 minutes
 
-### MCP Server Standards
-- Stateless tool design (no in-memory state)
-- Database-backed operations (persist all changes)
-- Structured input/output schemas
-- Comprehensive error responses
-- Agent-only invocation (no direct frontend access)
-- Tool contract documentation
+### Observability Standards
+- Pod logs accessible via kubectl or Kagent
+- Pod status monitored (Running, Pending, Failed)
+- Resource usage tracked (CPU, memory)
+- Health check endpoints responding
+- Cluster events logged
+- Deployment history tracked
 
-### Chat API Standards
-- RESTful endpoints for conversation management
-- Streaming response support (if applicable)
-- Conversation history retrieval
-- Message persistence
-- Tool call tracking
-- Proper error responses
+### Automation Standards
+- All deployment tasks automated via Claude Agents
+- Each agent has dedicated SKILL.md file
+- Agents run without manual intervention
+- Error handling and retry logic implemented
+- Deployment scripts idempotent
+- Cleanup scripts remove all resources
 
-### Database Standards (Phase II + Phase III)
-- SQLModel for all ORM operations
-- Alembic for all schema migrations
-- Proper indexing for query performance
-- Foreign key constraints enforced
-- No raw SQL unless justified in ADR
-- Connection pooling and transaction management
-- Database operations wrapped in try-except blocks
-- Conversation and message persistence
-- Tool call history tracking
+### Resource Management Standards
+- Frontend: max 1 CPU, 2GB RAM per replica
+- Backend: max 1.5 CPU, 3GB RAM per replica
+- Total cluster: max 4 CPUs, 8GB RAM
+- Minimum 2 replicas for frontend and backend
+- Resource requests and limits defined
+- No resource exhaustion
 
-### Security Standards (Phase II + Phase III)
-- Environment variables for all secrets
-- `OPENROUTER_API_KEY` for AI agent (NOT `OPENAI_API_KEY`)
-- No hardcoded credentials or API keys
-- CORS properly configured (no wildcard in production)
-- Input validation on frontend, backend, and MCP tools
-- SQL injection prevention through ORM
-- XSS prevention through React auto-escaping
-- Proper error handling (no stack traces to users)
-- Agent prompt injection prevention
-- Tool access control (agent-only)
-- HTTPS in production
+### Documentation Standards
+- Helm charts documented with README
+- Deployment scripts documented
+- Agent SKILL.md files complete
+- Kubernetes architecture documented
+- Troubleshooting guide provided
+- Rollback procedures documented
+
+## Phase III Foundations (Maintained)
+
+Phase IV builds on Phase III foundations. All Phase III principles remain in effect:
+
+### Phase III Architecture (Maintained)
+- AI-powered chatbot with natural language interface
+- OpenAI Agents SDK with OpenRouter integration
+- MCP Server with stateless, database-backed tools
+- Conversation persistence and message tracking
+- Agent behavior contract compliance
+- No manual coding (Claude generates all code)
+
+### Phase III Quality Standards (Maintained)
+- Agent uses MCP tools for all task operations
+- No direct database access from agent logic
+- Stateless backend (restart-safe)
+- Conversation persistence working
+- ChatKit UI integrated
+- Natural language task operations functional
+- Agent behavior meets contract
 
 ## Phase II Foundations (Maintained)
 
-Phase III builds on Phase II foundations. All Phase II principles remain in effect:
+Phase IV builds on Phase II foundations. All Phase II principles remain in effect:
 
 ### Phase II Architecture (Maintained)
 - Full-stack web application (Next.js + FastAPI + Neon)
@@ -476,63 +625,66 @@ The following Phase I constraints remain **DEPRECATED** and MUST NOT be used:
 - ❌ Console-based UI
 - ✅ **Use instead**: Next.js web interface + ChatKit chat UI
 
-## Phase III Scope
+## Phase IV Scope
 
-### Phase III Scope (In Scope)
-- AI-powered chatbot for task management
-- Natural language task operations (create, read, update, delete, list)
-- OpenAI Agents SDK integration with OpenRouter
-- MCP Server with stateless, database-backed tools
-- Conversation persistence across sessions
-- Message history tracking
-- Tool call logging
-- Chat API endpoints
-- ChatKit UI integration
-- Agent behavior specification
-- MCP tool contracts
-- Stateless backend architecture
+### Phase IV Scope (In Scope)
+- Local Kubernetes deployment with Minikube
+- Docker containerization for frontend and backend
+- Helm chart creation and deployment
+- AI DevOps automation (kubectl-ai, Kagent, Gordon)
+- Claude Agents for deployment tasks
+- Cluster health monitoring and optimization
+- Resource management and limits
+- Deployment idempotency
+- Observability (logs, metrics, pod status)
+- Cleanup and reset automation
+- Windows 10+ environment support
 
-### Phase III Boundaries (Out of Scope)
-- Multi-agent systems → Phase IV+
-- Advanced NLP features (sentiment analysis, intent classification) → Phase IV+
-- Voice interface → Phase IV+
-- Multi-language support → Phase IV+
-- Agent learning/training → Phase IV+
-- Custom LLM fine-tuning → Phase IV+
-- Real-time collaboration → Phase IV+
-- Advanced analytics on conversations → Phase IV+
+### Phase IV Boundaries (Out of Scope)
+- Cloud Kubernetes deployments (AWS EKS, GKE, AKS) → Phase V+
+- Production-grade monitoring (Prometheus, Grafana) → Phase V+
+- CI/CD pipelines (GitHub Actions, Jenkins) → Phase V+
+- Multi-cluster deployments → Phase V+
+- Service mesh (Istio, Linkerd) → Phase V+
+- Advanced networking (Ingress controllers, load balancers) → Phase V+
+- Database clustering and replication → Phase V+
+- Disaster recovery and backup → Phase V+
 
 ## Success Criteria
 
-### Phase III Completion Requires
-- ✅ AI agent deployed and functional
-- ✅ MCP Server exposing task tools
-- ✅ Chat API documented and functional (OpenAPI/Swagger)
-- ✅ Conversation persistence working (database-backed)
-- ✅ ChatKit UI integrated with chat API
-- ✅ Natural language task operations working end-to-end
-- ✅ Agent uses MCP tools (no direct database access)
-- ✅ Stateless backend (restart-safe)
-- ✅ All Phase III specs complete (agent.md, mcp-tools.md, chat-api.md, etc.)
-- ✅ Tests pass at all layers (unit, integration, e2e, agent behavior)
-- ✅ No manual coding (Claude generated ALL code)
-- ✅ OpenRouter API key configuration working
-- ✅ Agent behavior meets contract (confirmations, error handling, no hallucinations)
-- ✅ Code passes automated review for clean architecture
-- ✅ Performance meets standards (API <500ms p95, agent response <3s)
-- ✅ Security standards met (validation, CORS, no secrets in code, prompt injection prevention)
+### Phase IV Completion Requires
+- ✅ Docker images built for frontend and backend
+- ✅ Docker containers run successfully locally
+- ✅ Helm charts generated for frontend and backend
+- ✅ Helm charts deployed to Minikube
+- ✅ Minimum 2 replicas running for each service
+- ✅ All pods in Running state
+- ✅ Health checks passing for all pods
+- ✅ Services accessible within cluster
+- ✅ Resource limits respected (4 CPUs, 8GB RAM)
+- ✅ Deployment completes in under 15 minutes
+- ✅ Deployment is idempotent (can be re-run)
+- ✅ Cleanup scripts remove all resources
+- ✅ All deployment tasks automated via Claude Agents
+- ✅ Agent SKILL.md files complete
+- ✅ kubectl-ai and Kagent functional
+- ✅ Cluster health monitored and optimized
+- ✅ Logs and metrics accessible
+- ✅ No manual deployment steps required
+- ✅ Full reproducibility across machines
 
 ### Quality Gates
-- All chat endpoints documented with OpenAPI
-- All MCP tools have contract documentation
-- All database operations use SQLModel
-- All frontend components handle loading/error states
-- No direct database access from agent logic
-- No in-memory agent state (database-backed conversations)
-- Agent uses MCP tools for all task operations
-- No Phase I patterns (in-memory, CLI, positional indexes)
-- All tests passing (unit, integration, e2e, agent behavior)
-- OpenRouter API key configuration validated
+- All Helm charts validated
+- All Kubernetes manifests validated
+- All Docker images verified
+- All pods healthy and running
+- All services responding
+- Resource usage within limits
+- Deployment time under 15 minutes
+- Idempotency verified (re-run successful)
+- Cleanup verified (all resources removed)
+- Agent automation verified (no manual steps)
+- Observability verified (logs, metrics accessible)
 
 ## No Manual Coding Policy
 
@@ -546,6 +698,10 @@ Claude generates ALL:
 - Fixes
 - Tests
 - Documentation
+- **Dockerfiles**
+- **Helm Charts**
+- **Deployment Scripts**
+- **Agent Skills**
 
 Any instruction that implies manual coding MUST be rejected.
 
@@ -563,27 +719,30 @@ This constitution supersedes all other practices and requirements. Any deviation
 5. Create ADR for significant architectural decisions
 
 ### Versioning Policy
-- **MAJOR**: Backward incompatible changes (e.g., Phase II → Phase III)
+- **MAJOR**: Backward incompatible changes (e.g., Phase III → Phase IV)
 - **MINOR**: New principles or expanded guidance
 - **PATCH**: Clarifications, wording fixes, non-semantic changes
 
 ### Compliance Review
-- All pull requests must verify compliance with Phase III principles
-- Use `/sp.enforce-phase-ii-boundaries` to validate Phase II compliance
-- Phase III governance agent reviews all specifications and plans
-- No implementation proceeds without passing boundary checks
-- Agent behavior must meet contract requirements
-- MCP tools must be stateless and database-backed
+- All pull requests must verify compliance with Phase IV principles
+- Phase IV governance agent reviews all deployment specifications
+- No deployment proceeds without passing validation checks
+- Kubernetes manifests must pass validation
+- Helm charts must be syntactically correct
+- Docker images must build successfully
+- Resource limits must be respected
 
-### Phase III Enforcement
-The constitution ensures focus on Phase III objectives:
-- AI-powered chatbot with natural language interface
-- OpenAI Agents SDK with OpenRouter integration
-- MCP Server with stateless, database-backed tools
-- Conversation persistence and message tracking
-- Agent behavior contract compliance
-- No manual coding (Claude generates all code)
+### Phase IV Enforcement
+The constitution ensures focus on Phase IV objectives:
+- Local Kubernetes deployment with Minikube
+- Docker containerization with optimization
+- Helm chart-based deployment management
+- AI DevOps automation (kubectl-ai, Kagent, Gordon)
+- Claude Agents for full deployment automation
+- Deployment idempotency and reproducibility
+- Observability and resource management
+- No manual deployment steps
 
-All changes must maintain alignment with Spec-Driven Development methodology, Phase II architectural foundations, and Phase III AI agent principles.
+All changes must maintain alignment with Spec-Driven Development methodology, Phase II architectural foundations, Phase III AI agent principles, and Phase IV deployment standards.
 
-**Version**: 3.0.0 | **Ratified**: 2026-01-03 | **Last Amended**: 2026-02-02
+**Version**: 4.0.0 | **Ratified**: 2026-01-03 | **Last Amended**: 2026-02-07

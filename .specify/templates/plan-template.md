@@ -81,6 +81,45 @@
 - Tool call tracking
 - Conversation history retrieval
 
+### Phase IV Local Kubernetes Deployment (if applicable)
+
+**Deployment Layer**:
+- Container Runtime: Docker Desktop (Windows 10+)
+- Orchestration: Minikube (local Kubernetes cluster)
+- Package Manager: Helm 3+ (chart-based deployment)
+- AI DevOps: kubectl-ai, Kagent, Gordon
+- Automation: Claude Agents with Skills
+- Environment: Windows 10+ (PowerShell or Bash)
+
+**Deployment Requirements**:
+- Dockerized frontend and backend applications
+- Multi-stage Docker builds for optimized images
+- Helm charts for deployment management
+- Minimum 2 replicas for frontend and backend
+- Resource limits (max 4 CPUs, 8GB RAM total)
+- Health checks (liveness and readiness probes)
+- Idempotent deployment (repeatable)
+- Full automation via Claude Agents
+- Deployment completes in under 15 minutes
+
+**Kubernetes Requirements**:
+- Minikube cluster setup
+- Namespace isolation (todo namespace recommended)
+- Deployments with replica configuration
+- Services for pod discovery (ClusterIP)
+- ConfigMaps for non-sensitive configuration
+- Secrets for sensitive data (API keys, credentials)
+- Resource requests and limits defined
+- Health check probes configured
+
+**AI DevOps Automation**:
+- docker-build-optimizer agent for image builds
+- docker-container-runner agent for local testing
+- helm-chart-generator agent for chart creation
+- k8s-deploy-agent for Minikube deployment
+- k8s-cleanup agent for resource cleanup
+- cluster-health-monitor agent for observability
+
 ### Phase I Single Project (if applicable - deprecated for new features)
 
 **Language/Version**: Python 3.13+
@@ -101,7 +140,25 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-### Phase III Requirements (if applicable)
+### Phase IV Requirements (if applicable)
+- ✅ Docker images for frontend and backend (multi-stage builds)
+- ✅ Dockerfiles with health checks and non-root users
+- ✅ Helm charts for deployment management
+- ✅ Kubernetes manifests (Deployments, Services, ConfigMaps, Secrets)
+- ✅ Minimum 2 replicas for frontend and backend
+- ✅ Resource limits defined (max 4 CPUs, 8GB RAM total)
+- ✅ Health checks configured (liveness and readiness probes)
+- ✅ Minikube for local Kubernetes cluster
+- ✅ AI DevOps automation (kubectl-ai, Kagent, Gordon)
+- ✅ Claude Agents for deployment tasks (docker-build-optimizer, helm-chart-generator, k8s-deploy-agent, k8s-cleanup)
+- ✅ Deployment idempotency (repeatable, declarative)
+- ✅ Observability (logs, metrics, pod status monitoring)
+- ✅ Deployment completes in under 15 minutes
+- ✅ No manual deployment steps (full automation)
+- ✅ Agent SKILL.md files for deployment tasks
+- ✅ Windows 10+ environment support
+
+### Phase III Requirements (if applicable - maintained in Phase IV)
 - ✅ Uses approved AI/Agent stack (OpenAI Agents SDK, OpenRouter, MCP)
 - ✅ OpenRouter API integration (NOT direct OpenAI API)
 - ✅ `OPENROUTER_API_KEY` environment variable (NOT `OPENAI_API_KEY`)
