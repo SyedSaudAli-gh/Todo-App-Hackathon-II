@@ -352,6 +352,22 @@
 - [x] T171 Test deployment on fresh Windows 10+ environment (Tested on Windows with Docker Desktop and Minikube)
 - [x] T172 Verify zero manual coding was required (all tasks via Claude Agents) (All implementation via automated agents and Helm/Kubernetes)
 
+### External Access Configuration
+
+- [x] T173 [P] Modify frontend Helm values to use NodePort service type with nodePort 30000
+- [x] T174 [P] Modify backend Helm values to use NodePort service type with nodePort 30001
+- [x] T175 [P] Update frontend service template to support nodePort configuration
+- [x] T176 [P] Update backend service template to support nodePort configuration
+- [x] T177 Upgrade frontend Helm release with NodePort configuration using `helm upgrade todo-frontend ./helm/todo-frontend -n todo`
+- [x] T178 Upgrade backend Helm release with NodePort configuration using `helm upgrade todo-backend ./helm/todo-backend -n todo`
+- [x] T179 Verify frontend service is exposed as NodePort on port 30000 using `kubectl get svc -n todo`
+- [x] T180 Verify backend service is exposed as NodePort on port 30001 using `kubectl get svc -n todo`
+- [x] T181 Test frontend accessibility via Minikube service command `minikube service todo-frontend -n todo --url`
+- [x] T182 Test backend accessibility via Minikube service command `minikube service todo-backend -n todo --url`
+- [x] T183 Create ACCESS.md documentation with comprehensive access instructions for Windows/Docker, Linux/macOS, and kubectl port-forward methods
+- [x] T184 Commit NodePort configuration changes with descriptive commit message
+- [x] T185 Push NodePort configuration to remote repository
+
 ---
 
 ## Dependencies & Execution Order
@@ -446,6 +462,6 @@ Due to agent orchestration decision (sequential with validation gates):
 - Each user story should be independently completable and testable
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- Total task count: 172 tasks
+- Total task count: 185 tasks (172 original + 13 NodePort configuration tasks)
 - Estimated MVP completion (US1 only): ~12-15 minutes deployment time
 - Estimated full completion (all stories): ~20-25 minutes including validation
