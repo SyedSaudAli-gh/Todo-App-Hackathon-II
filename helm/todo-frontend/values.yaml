@@ -10,9 +10,10 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 3000
   targetPort: 3000
+  nodePort: 30000  # External port for Minikube access
 
 resources:
   requests:
