@@ -1,0 +1,54 @@
+# Default values for todo-backend
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: todo-backend
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+
+resources:
+  requests:
+    cpu: 750m
+    memory: 1.5Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+healthCheck:
+  enabled: true
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+secrets:
+  # These must be provided at deployment time
+  databaseUrl: ""
+  openrouterApiKey: ""
+
+env:
+  # Additional environment variables
+  LOG_LEVEL: info
+  ENVIRONMENT: production
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

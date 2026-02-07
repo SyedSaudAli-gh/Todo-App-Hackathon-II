@@ -192,6 +192,45 @@ description: "Task list template for feature implementation"
 
 **Checkpoint**: Foundation ready - agent-based user story implementation can now begin in parallel
 
+### Phase IV Local Kubernetes Deployment Setup (if applicable)
+
+**Docker Setup**:
+- [P] [Setup] Create Dockerfile for frontend in `web/Dockerfile`
+- [P] [Setup] Create Dockerfile for backend in `api/Dockerfile`
+- [P] [Setup] Create .dockerignore files for frontend and backend
+- [P] [Setup] Configure multi-stage builds for image optimization
+- [P] [Setup] Add health check endpoints to applications
+- [P] [Setup] Setup docker-build-optimizer agent configuration
+
+**Helm Chart Setup**:
+- [P] [Setup] Create Helm chart structure for frontend in `helm/todo-frontend/`
+- [P] [Setup] Create Helm chart structure for backend in `helm/todo-backend/`
+- [P] [Setup] Configure values.yaml for frontend (replicas, resources, image)
+- [P] [Setup] Configure values.yaml for backend (replicas, resources, image)
+- [P] [Setup] Create Kubernetes manifest templates (deployment, service, configmap, secret)
+- [P] [Setup] Setup helm-chart-generator agent configuration
+
+**Kubernetes Setup**:
+- [P] [Setup] Initialize Minikube cluster
+- [P] [Setup] Create todo namespace in Kubernetes
+- [P] [Setup] Configure kubectl context for Minikube
+- [P] [Setup] Setup resource quotas for namespace
+- [P] [Setup] Configure k8s-deploy-agent for deployment automation
+- [P] [Setup] Configure k8s-cleanup agent for resource cleanup
+
+**AI DevOps Setup**:
+- [P] [Setup] Install and configure kubectl-ai
+- [P] [Setup] Install and configure Kagent for cluster monitoring
+- [P] [Setup] Install and configure Gordon for Docker assistance
+- [P] [Setup] Create agent SKILL.md files for deployment tasks
+- [P] [Setup] Setup observability tools (logs, metrics access)
+
+**Deployment Testing Setup**:
+- [P] [Setup] Create deployment validation scripts
+- [P] [Setup] Setup health check verification
+- [P] [Setup] Create resource usage monitoring scripts
+- [P] [Setup] Setup idempotency tests (re-run verification)
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---

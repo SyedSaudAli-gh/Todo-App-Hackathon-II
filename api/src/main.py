@@ -73,6 +73,21 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health_check():
+    """
+    Root-level health check endpoint for Docker/Kubernetes health probes.
+
+    Returns:
+        dict: Health status information
+    """
+    return {
+        "status": "healthy",
+        "service": "todo-api",
+        "version": "1.0.0",
+    }
+
+
 # Register health check router
 from .routers.health import router as health_router
 app.include_router(health_router, prefix=f"/api/{settings.API_VERSION}", tags=["health"])

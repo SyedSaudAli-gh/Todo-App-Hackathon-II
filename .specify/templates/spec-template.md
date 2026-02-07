@@ -272,6 +272,40 @@
 
 **Note**: Detailed conversation schema will be defined in `specs/phase-iii/database.md`
 
+### Phase IV Deployment Configuration *(include for Phase IV deployment features)*
+
+<!--
+  For Phase IV features, specify the Kubernetes deployment configuration.
+  This section defines the deployment architecture without implementation details.
+-->
+
+#### Docker Configuration
+- **Frontend Image**: [Base image, build stages, exposed ports]
+- **Backend Image**: [Base image, build stages, exposed ports]
+- **Image Optimization**: [Multi-stage builds, layer caching, size targets]
+- **Health Checks**: [Endpoints, intervals, timeouts]
+
+#### Helm Chart Configuration
+- **Frontend Chart**: [Replica count, resource limits, service type]
+- **Backend Chart**: [Replica count, resource limits, service type]
+- **ConfigMaps**: [Non-sensitive configuration keys]
+- **Secrets**: [Sensitive data keys - API keys, credentials]
+
+#### Kubernetes Resources
+- **Namespace**: [Namespace name - e.g., todo]
+- **Deployments**: [Replica configuration, update strategy]
+- **Services**: [Service types, port mappings]
+- **Resource Limits**: [CPU and memory limits per service]
+- **Health Probes**: [Liveness and readiness probe configuration]
+
+#### Deployment Automation
+- **Agents Required**: [docker-build-optimizer, helm-chart-generator, k8s-deploy-agent, k8s-cleanup]
+- **Deployment Steps**: [Build → Test → Chart → Deploy → Verify]
+- **Idempotency**: [How deployment ensures repeatability]
+- **Observability**: [Logging, metrics, health monitoring]
+
+**Note**: Detailed deployment specifications will be defined in `specs/phase-iv/deployment.md`
+
 ## Success Criteria *(mandatory)*
 
 <!--

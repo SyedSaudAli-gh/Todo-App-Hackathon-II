@@ -1,0 +1,277 @@
+# Frontend Helm Chart Contract
+
+**Chart Name**: todo-frontend
+**Version**: 1.0.0
+**Description**: Helm chart for Todo Chatbot frontend (Next.js)
+
+## Required Chart Structure
+
+```
+todo-frontend/
+├── Chart.yaml           # REQUIRED
+├── values.yaml          # REQUIRED
+├── templates/
+│   ├── deployment.yaml  # REQUIRED
+│   ├── service.yaml     # REQUIRED
+│   ├── configmap.yaml   # REQUIRED
+│   └── _helpers.tpl     # OPTIONAL
+└── .helmignore          # OPTIONAL
+```
+
+## Chart.yaml Requirements
+
+```yaml
+apiVersion: v2
+name: todo-frontend
+description: Helm chart for Todo Chatbot frontend
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+```
+
+**Validation**:
+- ✅ apiVersion must be "v2"
+- ✅ name must be "todo-frontend"
+- ✅ type must be "application"
+- ✅ version must follow semantic versioning
+
+## values.yaml Requirements
+
+### Required Fields
+
+```yaml
+replicaCount: 2  # MUST be 2 (minimum requirement)
+
+image:
+  repository: todo-frontend  # REQUIRED
+  tag: v1.0.0               # REQUIRED (must not be "latest")
+  pullPolicy: IfNotPresent  # REQUIRED
+
+service:
+  type: ClusterIP  # REQUIRED (must be ClusterIP)
+  port: 3000       # REQUIRED
+
+resources:
+  requests:
+    cpu: 500m      # REQUIRED (0.5 CPU)
+    memory: 1Gi    # REQUIRED (1GB)
+  limits:
+    cpu: 750m      # REQUIRED (0.75 CPU)
+    memory: 1.5Gi  # REQUIRED (1.5GB)
+
+healthCheck:
+  enabled: true                  # REQUIRED
+  path: /api/health             # REQUIRED
+  initialDelaySeconds: 10       # REQUIRED
+  periodSeconds: 30             # REQUIRED
+  timeoutSeconds: 5             # REQUIRED
+  failureThreshold: 3           # REQUIRED
+
+env:  # REQUIRED (at least NODE_ENV and API_BASE_URL)
+  - name: NODE_ENV
+    value: "production"
+  - name: API_BASE_URL
+    value: "http://todo-backend.todo.svc.cluster.local:8000"
+```
+
+**Validation**:
+- ✅ replicaCount must be exactly 2
+- ✅ image.tag must not be "latest" (must be specific version)
+- ✅ service.type must be "ClusterIP"
+- ✅ resources.requests.cpu must be "500m"
+- ✅ resources.requests.memory must be "1Gi"
+- ✅ resources.limits.cpu must be "750m"
+- ✅ resources.limits.memory must be "1.5Gi"
+- ✅ healthCheck.enabled must be true
+- ✅ env must include NODE_ENV and API_BASE_URL
+
+## templates/deployment.yaml Requirements
+
+### Required Metadata
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "todo-frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: todo-frontend
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+```
+
+### Required Spec
+
+```yaml
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: todo-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: todo-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.path }}
+            port: 3000
+          initialDelaySeconds: {{ .Values.healthCheck.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.healthCheck.path }}
+            port: 3000
+          initialDelaySeconds: {{ .Values.healthCheck.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthCheck.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthCheck.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthCheck.failureThreshold }}
+        env:
+        {{- range .Values.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+```
+
+**Validation**:
+- ✅ Must use RollingUpdate strategy
+- ✅ maxSurge must be 1, maxUnavailable must be 0
+- ✅ Must include both liveness and readiness probes
+- ✅ Probes must use HTTP GET to health check path
+- ✅ Must include resource requests and limits
+- ✅ Must include environment variables from values
+
+## templates/service.yaml Requirements
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "todo-frontend.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: todo-frontend
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: todo-frontend
+```
+
+**Validation**:
+- ✅ Service type must be ClusterIP
+- ✅ Port must be 3000
+- ✅ Selector must match deployment labels
+
+## templates/configmap.yaml Requirements
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "todo-frontend.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  NODE_ENV: "production"
+  API_BASE_URL: "http://todo-backend.todo.svc.cluster.local:8000"
+```
+
+**Validation**:
+- ✅ Must include NODE_ENV
+- ✅ Must include API_BASE_URL pointing to backend service
+
+## Helm Lint Validation
+
+The chart must pass `helm lint` with zero errors:
+
+```bash
+helm lint helm/todo-frontend
+```
+
+**Expected Output**:
+```
+==> Linting helm/todo-frontend
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+```
+
+## Template Rendering Validation
+
+The chart must render without errors:
+
+```bash
+helm template todo-frontend helm/todo-frontend --debug
+```
+
+**Expected Output**: Valid Kubernetes YAML manifests with no template errors
+
+## Deployment Validation
+
+After deployment, the following must be true:
+
+1. ✅ Deployment exists: `kubectl get deployment todo-frontend -n todo`
+2. ✅ 2 replicas running: `kubectl get pods -n todo -l app=todo-frontend | grep Running | wc -l` returns 2
+3. ✅ Service exists: `kubectl get service todo-frontend -n todo`
+4. ✅ ConfigMap exists: `kubectl get configmap todo-frontend-config -n todo`
+5. ✅ All pods ready: `kubectl wait --for=condition=Ready pod -l app=todo-frontend -n todo --timeout=300s`
+6. ✅ Health checks passing: `kubectl describe pods -n todo -l app=todo-frontend | grep "Liveness.*succeeded"`
+
+## Resource Usage Validation
+
+Total resource usage for frontend (2 replicas):
+
+- **CPU Requests**: 1 CPU (500m × 2)
+- **CPU Limits**: 1.5 CPUs (750m × 2)
+- **Memory Requests**: 2GB (1Gi × 2)
+- **Memory Limits**: 3GB (1.5Gi × 2)
+
+**Validation**:
+```bash
+kubectl top pods -n todo -l app=todo-frontend
+```
+
+Expected: Each pod using < 750m CPU and < 1.5Gi memory
+
+## Contract Compliance Checklist
+
+- [ ] Chart structure matches required layout
+- [ ] Chart.yaml contains all required fields
+- [ ] values.yaml contains all required fields with correct values
+- [ ] deployment.yaml includes RollingUpdate strategy
+- [ ] deployment.yaml includes health probes
+- [ ] deployment.yaml includes resource limits
+- [ ] service.yaml uses ClusterIP type
+- [ ] configmap.yaml includes required environment variables
+- [ ] `helm lint` passes with zero errors
+- [ ] `helm template` renders without errors
+- [ ] Deployment creates exactly 2 replicas
+- [ ] All pods reach Running state
+- [ ] Health checks pass for all pods
+- [ ] Resource usage within limits
