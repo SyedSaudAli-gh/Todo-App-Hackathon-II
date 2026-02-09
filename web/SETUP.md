@@ -40,7 +40,7 @@ Create or update `web/.env.local`:
 
 ```env
 # API Configuration
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_API_VERSION=v1
 
 # Better Auth (Required)

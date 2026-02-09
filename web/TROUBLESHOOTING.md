@@ -56,7 +56,7 @@ Create or edit `web/.env.local`:
 
 ```env
 # API Configuration
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_API_VERSION=v1
 
 # Better Auth
@@ -110,7 +110,7 @@ npm run dev
    ```
    📋 Loading todos...
    🌐 API Request: GET /tasks
-   → Calling: http://localhost:8001/api/tasks
+   → Calling: http://localhost:8000/api/tasks
    ← Response: 200 OK
    ✅ Success
    ✅ Loaded X todos
@@ -158,7 +158,7 @@ npm run dev
 **Solution:**
 1. **Check backend is running:**
    ```bash
-   curl http://localhost:8001/api/health
+   curl http://localhost:8000/api/health
    ```
 
 2. **Verify backend has the correct public key:**
@@ -185,7 +185,7 @@ npm run dev
    ```
 
 2. **Check NEXT_PUBLIC_API_BASE_URL:**
-   - Must be `http://localhost:8001` for local development
+   - Must be `http://localhost:8000` for local development
    - Must match your backend URL
 
 3. **Check CORS configuration on backend:**
@@ -199,7 +199,7 @@ When you encounter authentication errors, check these in order:
 - [ ] Dev server was restarted after adding `JWT_PRIVATE_KEY`
 - [ ] You are logged in (Better Auth session exists)
 - [ ] Browser console shows successful JWT token fetch (status 200)
-- [ ] Backend API is running on `http://localhost:8001`
+- [ ] Backend API is running on `http://localhost:8000`
 - [ ] Backend has the correct `public_key.pem` for JWT verification
 - [ ] `NEXT_PUBLIC_API_BASE_URL` matches your backend URL
 - [ ] Browser cookies are not blocked

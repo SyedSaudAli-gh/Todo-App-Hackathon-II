@@ -7,7 +7,7 @@ import json
 
 # Test with the full token from the database
 FULL_TOKEN = "xSufCMuRzGB1zeEgzQqJnwg0JLLMmILD"
-API_URL = "http://localhost:8001/api/v1/users/me/stats"
+API_URL = "http://localhost:8000/api/v1/users/me/stats"
 
 print("Testing authentication flow...")
 print(f"Token: {FULL_TOKEN}")
