@@ -1,0 +1,49 @@
+# Default values for todo-frontend
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: todo-frontend
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+  nodePort: 30000  # External port for Minikube access
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 750m
+    memory: 1.5Gi
+
+healthCheck:
+  enabled: true
+  liveness:
+    path: /api/health
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /api/health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+env:
+  # API_BASE_URL will be set via configmap
+  NODE_ENV: production
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

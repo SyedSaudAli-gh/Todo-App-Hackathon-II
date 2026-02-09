@@ -1,20 +1,74 @@
-# In-Memory Python Todo App
+# Todo Chatbot Application
 
-A console-based, in-memory todo application that allows users to add, view, complete, update, and delete todo items. All data is stored in memory only and will be lost when the application exits.
+A full-stack todo management application with AI chatbot integration, deployed on Kubernetes.
+
+## Project Phases
+
+- **Phase I**: In-memory Python CLI todo app ✅
+- **Phase II**: Web application with FastAPI backend and Next.js frontend ✅
+- **Phase III**: AI chatbot integration with Gemini ✅
+- **Phase IV**: Local Kubernetes deployment with Minikube ✅
+
+## Current Deployment: Phase IV (Kubernetes)
+
+The application is deployed on Kubernetes using Minikube with:
+- **Frontend**: Next.js web application (2 replicas)
+- **Backend**: FastAPI REST API (2 replicas)
+- **Services**: NodePort for external access
+- **Health Checks**: Liveness and readiness probes
+- **High Availability**: Multiple replicas with load balancing
+
+### Quick Start (Kubernetes)
+
+1. **Start Minikube**:
+   ```bash
+   minikube start
+   ```
+
+2. **Access Frontend** (Web UI):
+   ```bash
+   minikube service todo-frontend -n todo
+   ```
+
+3. **Access Backend** (API):
+   ```bash
+   minikube service todo-backend -n todo
+   ```
+
+**Important**: Keep terminal windows open while using the application.
+
+For detailed access instructions, troubleshooting, and deployment management, see [KUBERNETES_ACCESS.md](./KUBERNETES_ACCESS.md).
+
+### Deployment Status
+
+```bash
+# Check deployment status
+kubectl get all -n todo
+
+# View logs
+kubectl logs -n todo -l app=todo-frontend --tail=50
+kubectl logs -n todo -l app=todo-backend --tail=50
+```
 
 ## Features
 
-- Add new todo items
-- List all todo items with completion status
-- Mark todo items as complete
-- Delete todo items
-- Update todo item descriptions
-- Command-line interface
-- In-memory storage (no persistent data)
+- ✅ Add, view, complete, update, and delete todo items
+- ✅ AI chatbot for natural language todo management
+- ✅ Persistent storage with PostgreSQL
+- ✅ User authentication with NextAuth
+- ✅ RESTful API with FastAPI
+- ✅ Modern web UI with Next.js and Tailwind CSS
+- ✅ Kubernetes deployment with Helm charts
+- ✅ Health checks and monitoring
+- ✅ High availability with multiple replicas
 
 ## Prerequisites
 
-- Python 3.13+
+### For Kubernetes Deployment (Phase IV)
+- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
+- Minikube
+- kubectl
+- Helm 3.x
 
 ## Installation
 
