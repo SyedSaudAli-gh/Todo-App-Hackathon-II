@@ -91,3 +91,7 @@ next-env.d.ts
 
 # Vercel
 .vercel
+
+# Kubernetes Secrets (never commit actual secrets)
+helm/secrets.yaml
+**/secrets.yaml

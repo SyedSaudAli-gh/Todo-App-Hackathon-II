@@ -272,6 +272,52 @@
 
 **Note**: Detailed conversation schema will be defined in `specs/phase-iii/database.md`
 
+### Phase IV Deployment Requirements *(include for Phase IV deployment features)*
+
+<!--
+  For Phase IV features, specify the deployment requirements and architecture.
+  This section defines what needs to be deployed and how.
+-->
+
+#### Docker Image Requirements
+- **Backend Image**: Multi-stage build with FastAPI application
+- **Frontend Image**: Multi-stage build with Next.js application
+- **Base Images**: Alpine or distroless for minimal size
+- **Security**: Non-root users, no hardcoded secrets
+- **Tagging**: Semantic versioning (e.g., v1.0.0)
+
+#### Helm Chart Requirements
+- **Backend Chart**: Deployment, Service, ConfigMap, Secret templates
+- **Frontend Chart**: Deployment, Service, ConfigMap templates
+- **Values**: Environment-specific configuration (dev, staging, prod)
+- **Metadata**: Chart.yaml with version and description
+
+#### Kubernetes Resource Requirements
+- **Namespace**: `todo` (isolated namespace for application)
+- **Deployments**: Backend and frontend with replica configuration
+- **Services**: ClusterIP or NodePort for internal/external access
+- **ConfigMaps**: Non-sensitive configuration (API URLs, feature flags)
+- **Secrets**: Sensitive data (API keys, database credentials)
+- **Health Checks**: Liveness, readiness, and startup probes
+- **Resource Limits**: CPU and memory requests/limits defined
+
+#### AI-Assisted DevOps Requirements
+- **Gordon Usage**: All Docker operations must attempt Gordon first
+- **kubectl-ai Usage**: All Kubernetes operations must attempt kubectl-ai first
+- **kagent Usage**: Complex deployments should use kagent for automation
+- **Documentation**: AI tool usage must be logged with screenshots/prompts
+
+#### Deployment Verification Requirements
+- All pods in `Running` state
+- Services accessible via port forwarding
+- Frontend loads in browser
+- Backend API responds to health checks
+- Application functionality working end-to-end
+- Database connection working
+- No error logs in pod output
+
+**Note**: Detailed deployment specifications will be defined in `specs/phase-iv/deployment.md`
+
 ## Success Criteria *(mandatory)*
 
 <!--

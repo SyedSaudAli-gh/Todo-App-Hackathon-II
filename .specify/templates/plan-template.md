@@ -81,6 +81,73 @@
 - Tool call tracking
 - Conversation history retrieval
 
+### Phase IV Deployment Architecture (if applicable)
+
+**Deployment Platform**:
+- Kubernetes: Minikube (local cluster)
+- Package Manager: Helm 3+
+- Containerization: Docker
+- Kubernetes CLI: kubectl
+
+**AI-Assisted DevOps Tools** (MANDATORY):
+- Gordon: AI-powered Docker assistant
+- kubectl-ai: AI-powered Kubernetes assistant
+- kagent: Kubernetes deployment agent
+
+**Docker Requirements**:
+- Multi-stage builds (build stage + runtime stage)
+- Minimal runtime images (alpine, distroless)
+- Non-root users for security
+- Layer caching optimization
+- Consistent tagging (semantic versioning)
+
+**Helm Chart Requirements**:
+- Templated manifests with value substitution
+- Values files for environment configuration
+- Chart metadata (Chart.yaml) with version and description
+- Helper templates for reusable logic
+- Validation of required values
+
+**Kubernetes Requirements**:
+- Declarative manifests (YAML)
+- Resource requests and limits defined
+- Health checks (liveness, readiness, startup probes)
+- Environment variables via ConfigMaps and Secrets
+- Labels and selectors for resource organization
+- Namespace isolation (`todo` namespace)
+
+**Cloud-Native Best Practices**:
+- Stateless applications (no local file storage)
+- Environment-based configuration (no hardcoded values)
+- Health checks for all services
+- Resource management (CPU/memory limits)
+- Container security (non-root users, minimal images)
+
+**Deployment Process**:
+1. Build Docker images (via Gordon or Claude)
+2. Load images into Minikube (if using local registry)
+3. Create Kubernetes namespace (`todo`)
+4. Apply Helm charts (via kubectl-ai/kagent or Claude)
+5. Verify pod status (Running)
+6. Verify service accessibility (port forwarding)
+7. Test application functionality
+
+**Verification Requirements**:
+- All pods in `Running` state
+- Services accessible via port forwarding
+- Frontend loads in browser
+- Backend API responds to health checks
+- Application functionality working end-to-end
+- Database connection working
+- No error logs in pod output
+
+**Documentation Requirements**:
+- Complete setup instructions in README
+- All commands documented (Minikube, Docker, Helm, kubectl)
+- AI tool usage logs/screenshots included
+- Troubleshooting guide for common issues
+- Reproducibility guarantee (anyone can follow README and deploy)
+
 ### Phase I Single Project (if applicable - deprecated for new features)
 
 **Language/Version**: Python 3.13+

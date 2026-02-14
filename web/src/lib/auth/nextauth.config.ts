@@ -19,6 +19,7 @@ console.log("🔌 Initializing NextAuth with database connection...");
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PostgresAdapter(pool),
+  trustHost: true, // Trust localhost and all hosts (required for Docker/development)
   providers: [
     // Email/Password Authentication
     CredentialsProvider({
@@ -106,7 +107,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Generate JWT access token for backend API
         try {
           const privateKey = process.env.JWT_PRIVATE_KEY;
-          if (privateKey) {
+          if (!privateKey) {
+            console.warn('⚠️ JWT_PRIVATE_KEY not configured in environment variables');
+            console.warn('⚠️ Backend API authentication will not work without JWT token');
+          } else {
             // Decode base64 private key
             const decodedKey = Buffer.from(privateKey, 'base64').toString('utf-8');
 
@@ -125,9 +129,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             );
 
             token.accessToken = accessToken;
+            console.log('✅ JWT access token generated for user:', user.email);
           }
         } catch (error) {
-          console.error('Error generating access token:', error);
+          console.error('❌ Error generating access token:', error);
         }
       }
       return token;

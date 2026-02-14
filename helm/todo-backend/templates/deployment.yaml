@@ -5,69 +5,70 @@ metadata:
   labels:
     {{- include "todo-backend.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "todo-backend.selectorLabels" . | nindent 6 }}
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        {{- include "todo-backend.selectorLabels" . | nindent 8 }}
-    spec:
-      containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - name: http
-          containerPort: {{ .Values.service.targetPort }}
-          protocol: TCP
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "todo-backend.fullname" . }}-secret
-              key: databaseUrl
-        - name: OPENROUTER_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "todo-backend.fullname" . }}-secret
-              key: openrouterApiKey
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: {{ include "todo-backend.fullname" . }}-config
-              key: LOG_LEVEL
-        - name: ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: {{ include "todo-backend.fullname" . }}-config
-              key: ENVIRONMENT
-        {{- if .Values.healthCheck.enabled }}
-        livenessProbe:
-          httpGet:
-            path: {{ .Values.healthCheck.liveness.path }}
-            port: http
-          initialDelaySeconds: {{ .Values.healthCheck.liveness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.healthCheck.liveness.periodSeconds }}
-          timeoutSeconds: {{ .Values.healthCheck.liveness.timeoutSeconds }}
-          failureThreshold: {{ .Values.healthCheck.liveness.failureThreshold }}
-        readinessProbe:
-          httpGet:
-            path: {{ .Values.healthCheck.readiness.path }}
-            port: http
-          initialDelaySeconds: {{ .Values.healthCheck.readiness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.healthCheck.readiness.periodSeconds }}
-          timeoutSeconds: {{ .Values.healthCheck.readiness.timeoutSeconds }}
-          failureThreshold: {{ .Values.healthCheck.readiness.failureThreshold }}
+        {{- include "todo-backend.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "todo-backend.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: todo-secrets
+            - configMapRef:
+                name: todo-config
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

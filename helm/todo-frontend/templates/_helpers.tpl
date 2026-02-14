@@ -7,6 +7,8 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
 */}}
 {{- define "todo-frontend.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -46,5 +48,15 @@ Selector labels
 {{- define "todo-frontend.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "todo-frontend.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app: todo-frontend
+{{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "todo-frontend.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "todo-frontend.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
 {{- end }}

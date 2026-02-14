@@ -1,0 +1,136 @@
+# Backend Helm Chart Contract
+
+chart:
+  name: todo-backend
+  version: 1.0.0
+  description: "Todo AI Chatbot Backend - FastAPI + Agents SDK + MCP"
+  appVersion: "1.0.0"
+
+values:
+  # Image configuration
+  image:
+    repository: todo-backend
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+
+  # Replica configuration
+  replicaCount: 1
+
+  # Service configuration
+  service:
+    type: NodePort
+    port: 8000
+    targetPort: 8000
+    nodePort: 30080
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Environment variables
+  env:
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: todo-secrets
+          key: database-url
+    - name: OPENROUTER_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: todo-secrets
+          key: openrouter-api-key
+    - name: FRONTEND_URL
+      valueFrom:
+        configMapKeyRef:
+          name: todo-config
+          key: frontend-url
+
+  # Health checks
+  healthCheck:
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534  # nobody user
+    readOnlyRootFilesystem: false
+
+  # Update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+templates:
+  required:
+    - deployment.yaml
+    - service.yaml
+    - configmap.yaml
+    - secret.yaml
+  optional:
+    - _helpers.tpl
+
+validation:
+  # Pre-deployment validation
+  pre_deployment:
+    - check: "Image exists"
+      command: "docker images | grep todo-backend:v1.0.0"
+      expected: "todo-backend.*v1.0.0"
+
+    - check: "Secret exists"
+      command: "kubectl get secret todo-secrets -n todo"
+      expected: "todo-secrets"
+
+    - check: "ConfigMap exists"
+      command: "kubectl get configmap todo-config -n todo"
+      expected: "todo-config"
+
+  # Post-deployment validation
+  post_deployment:
+    - check: "Pod running"
+      command: "kubectl get pods -n todo -l app=todo-backend"
+      expected: ".*Running"
+      timeout: 120s
+
+    - check: "Service created"
+      command: "kubectl get service todo-backend -n todo"
+      expected: "todo-backend.*NodePort.*30080"
+
+    - check: "Health check passing"
+      command: "curl -s http://localhost:30080/health"
+      expected: '{"status":"healthy"}'
+      requires: "NodePort accessible"
+
+    - check: "No error logs"
+      command: "kubectl logs -n todo -l app=todo-backend --tail=50 | grep -i error"
+      expected: ""  # No errors
+
+acceptance_criteria:
+  - Pod reaches Running state within 2 minutes
+  - Health checks pass within 30 seconds of pod start
+  - Service accessible via NodePort 30080
+  - Backend responds to /health endpoint with 200 status
+  - Database connection established (check logs)
+  - No error logs in pod output
+  - Resource limits not exceeded

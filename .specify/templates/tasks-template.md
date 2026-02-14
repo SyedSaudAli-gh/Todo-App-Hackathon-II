@@ -20,11 +20,12 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
+- **Phase IV Deployment**: `helm/` (Helm charts), `api/Dockerfile`, `web/Dockerfile`
 - **Phase III AI Agent App**: `api/src/` (backend + agent + MCP), `web/src/` (frontend + chat UI)
 - **Phase II Web App**: `api/src/`, `web/src/`
 - **Phase I Single project** (DEPRECATED): `src/`, `tests/` at repository root
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume Phase II/III web app - adjust based on plan.md structure
+- Paths shown below assume Phase II/III/IV web app - adjust based on plan.md structure
 
 <!-- 
   ============================================================================
@@ -98,6 +99,48 @@ description: "Task list template for feature implementation"
 - [P] [Setup] Setup agent behavior tests in `api/tests/test_agent/`
 - [P] [Setup] Setup MCP tool contract tests in `api/tests/test_mcp/`
 - [P] [Setup] Create test fixtures for conversations in `api/tests/fixtures/`
+
+### Phase IV Deployment Setup (if applicable)
+
+**Docker Setup**:
+- [P] [Setup] Create multi-stage Dockerfile for backend in `api/Dockerfile`
+- [P] [Setup] Create multi-stage Dockerfile for frontend in `web/Dockerfile`
+- [P] [Setup] Create .dockerignore files for backend and frontend
+- [P] [Setup] Configure Docker build optimization (layer caching, minimal images)
+- [P] [Setup] Setup non-root users in Docker images for security
+
+**Helm Chart Setup**:
+- [P] [Setup] Create Helm chart structure for backend in `helm/todo-backend/`
+- [P] [Setup] Create Helm chart structure for frontend in `helm/todo-frontend/`
+- [P] [Setup] Create Chart.yaml metadata for backend and frontend
+- [P] [Setup] Create values.yaml for environment configuration
+- [P] [Setup] Create helper templates in `helm/*/templates/_helpers.tpl`
+
+**Kubernetes Manifest Setup**:
+- [P] [Setup] Create Deployment manifests in `helm/*/templates/deployment.yaml`
+- [P] [Setup] Create Service manifests in `helm/*/templates/service.yaml`
+- [P] [Setup] Create ConfigMap manifests in `helm/*/templates/configmap.yaml`
+- [P] [Setup] Create Secret manifests in `helm/*/templates/secret.yaml`
+- [P] [Setup] Configure health checks (liveness, readiness, startup probes)
+- [P] [Setup] Configure resource limits (CPU, memory requests/limits)
+
+**Minikube Setup**:
+- [Setup] Install and start Minikube cluster
+- [Setup] Create `todo` namespace in Kubernetes
+- [Setup] Configure kubectl context for Minikube
+- [Setup] Setup port forwarding configuration
+
+**AI-Assisted DevOps Setup**:
+- [P] [Setup] Document Gordon usage patterns in deployment docs
+- [P] [Setup] Document kubectl-ai usage patterns in deployment docs
+- [P] [Setup] Document kagent usage patterns in deployment docs
+- [P] [Setup] Create deployment verification checklist
+
+**Deployment Documentation Setup**:
+- [P] [Setup] Create deployment guide in `README.md` or `docs/deployment.md`
+- [P] [Setup] Document all deployment commands (Docker, Helm, kubectl)
+- [P] [Setup] Create troubleshooting guide for common deployment issues
+- [P] [Setup] Setup AI tool logs/screenshots directory structure
 
 ### Phase I Single Project Setup (DEPRECATED - for reference only)
 
