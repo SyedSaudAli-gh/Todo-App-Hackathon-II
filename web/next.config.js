@@ -7,7 +7,7 @@ const nextConfig = {
   compress: true,
   env: {
     NEXT_PUBLIC_API_BASE_URL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001/api/v1",
     NEXT_PUBLIC_API_VERSION: process.env.NEXT_PUBLIC_API_VERSION || "v1",
   },
   webpack: (config) => {

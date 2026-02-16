@@ -1,0 +1,267 @@
+# Deployment Validation Contract
+
+validation:
+  # Pre-deployment checks
+  pre_deployment:
+    - check: "Minikube cluster running"
+      command: "minikube status"
+      expected: "host: Running\nkubelet: Running\napiserver: Running"
+      error_message: "Minikube cluster not running. Run: minikube start --cpus=2 --memory=4096"
+
+    - check: "Docker images built"
+      command: "docker images | grep todo"
+      expected: "todo-backend.*v1.0.0\ntodo-frontend.*v1.0.0"
+      error_message: "Docker images not found. Build images first."
+
+    - check: "Kubernetes namespace exists"
+      command: "kubectl get namespace todo"
+      expected: "NAME.*STATUS.*AGE\ntodo.*Active"
+      error_message: "Namespace 'todo' not found. Run: kubectl create namespace todo"
+
+    - check: "Secrets created"
+      command: "kubectl get secrets -n todo"
+      expected: "todo-secrets"
+      error_message: "Secret 'todo-secrets' not found. Create secret with DATABASE_URL and OPENROUTER_API_KEY"
+
+    - check: "ConfigMap created"
+      command: "kubectl get configmap -n todo"
+      expected: "todo-config"
+      error_message: "ConfigMap 'todo-config' not found. Create configmap with API_URL and FRONTEND_URL"
+
+    - check: "Helm installed"
+      command: "helm version"
+      expected: "version.BuildInfo"
+      error_message: "Helm not installed. Install Helm 3.x"
+
+  # Post-deployment checks
+  post_deployment:
+    - check: "All pods running"
+      command: "kubectl get pods -n todo"
+      expected: ".*Running.*Running"
+      timeout: 120s
+      error_message: "Pods not in Running state. Check: kubectl describe pods -n todo"
+
+    - check: "Backend pod running"
+      command: "kubectl get pods -n todo -l app=todo-backend -o jsonpath='{.items[0].status.phase}'"
+      expected: "Running"
+      timeout: 120s
+      error_message: "Backend pod not running. Check logs: kubectl logs -n todo -l app=todo-backend"
+
+    - check: "Frontend pod running"
+      command: "kubectl get pods -n todo -l app=todo-frontend -o jsonpath='{.items[0].status.phase}'"
+      expected: "Running"
+      timeout: 120s
+      error_message: "Frontend pod not running. Check logs: kubectl logs -n todo -l app=todo-frontend"
+
+    - check: "Services created"
+      command: "kubectl get services -n todo"
+      expected: "todo-backend.*NodePort.*30080\ntodo-frontend.*NodePort.*30030"
+      error_message: "Services not created correctly. Check: kubectl describe services -n todo"
+
+    - check: "Backend service accessible"
+      command: "kubectl get service todo-backend -n todo -o jsonpath='{.spec.ports[0].nodePort}'"
+      expected: "30080"
+      error_message: "Backend service not configured correctly"
+
+    - check: "Frontend service accessible"
+      command: "kubectl get service todo-frontend -n todo -o jsonpath='{.spec.ports[0].nodePort}'"
+      expected: "30030"
+      error_message: "Frontend service not configured correctly"
+
+    - check: "Frontend accessible via HTTP"
+      command: "curl -s -o /dev/null -w '%{http_code}' http://localhost:30030"
+      expected: "200"
+      timeout: 30s
+      requires: "Port forwarding or NodePort access"
+      error_message: "Frontend not accessible. Check pod logs and service configuration"
+
+    - check: "Backend health check"
+      command: "curl -s http://localhost:30080/health"
+      expected: '{"status":"healthy"}'
+      timeout: 30s
+      requires: "Port forwarding or NodePort access"
+      error_message: "Backend health check failed. Check pod logs: kubectl logs -n todo -l app=todo-backend"
+
+    - check: "No error logs in backend"
+      command: "kubectl logs -n todo -l app=todo-backend --tail=50 | grep -i 'error\\|exception\\|failed' | grep -v 'error_handler'"
+      expected: ""
+      error_message: "Errors found in backend logs. Review: kubectl logs -n todo -l app=todo-backend"
+
+    - check: "No error logs in frontend"
+      command: "kubectl logs -n todo -l app=todo-frontend --tail=50 | grep -i 'error\\|exception\\|failed' | grep -v 'error_handler'"
+      expected: ""
+      error_message: "Errors found in frontend logs. Review: kubectl logs -n todo -l app=todo-frontend"
+
+    - check: "Backend pod ready"
+      command: "kubectl get pods -n todo -l app=todo-backend -o jsonpath='{.items[0].status.conditions[?(@.type==\"Ready\")].status}'"
+      expected: "True"
+      error_message: "Backend pod not ready. Check readiness probe: kubectl describe pod -n todo -l app=todo-backend"
+
+    - check: "Frontend pod ready"
+      command: "kubectl get pods -n todo -l app=todo-frontend -o jsonpath='{.items[0].status.conditions[?(@.type==\"Ready\")].status}'"
+      expected: "True"
+      error_message: "Frontend pod not ready. Check readiness probe: kubectl describe pod -n todo -l app=todo-frontend"
+
+  # Functional tests
+  functional_tests:
+    - test: "Create task via chatbot"
+      description: "User creates a new task through chat interface"
+      steps:
+        - "Open browser to http://localhost:30030"
+        - "Verify chat interface loads"
+        - "Type message: 'Add task: Buy groceries'"
+        - "Verify task created successfully"
+        - "Check task appears in database"
+      expected: "Task created successfully and persisted in database"
+      manual: true
+
+    - test: "Update task via chatbot"
+      description: "User updates an existing task through chat interface"
+      steps:
+        - "Open browser to http://localhost:30030"
+        - "Type message: 'Mark task 1 as complete'"
+        - "Verify task updated successfully"
+        - "Check task status in database"
+      expected: "Task updated successfully and changes persisted"
+      manual: true
+
+    - test: "Delete task via chatbot"
+      description: "User deletes a task through chat interface"
+      steps:
+        - "Open browser to http://localhost:30030"
+        - "Type message: 'Delete task 1'"
+        - "Verify confirmation prompt appears"
+        - "Confirm deletion"
+        - "Verify task deleted successfully"
+      expected: "Task deleted successfully and removed from database"
+      manual: true
+
+    - test: "Pod restart resilience"
+      description: "Delete a pod and verify it restarts automatically with data intact"
+      steps:
+        - "Create a task via chatbot"
+        - "Note the task ID"
+        - "Delete backend pod: kubectl delete pod -n todo -l app=todo-backend"
+        - "Wait for new pod to start: kubectl get pods -n todo -w"
+        - "Verify task still exists in UI"
+      expected: "New pod created automatically, tasks still accessible, no data loss"
+      command: "kubectl delete pod -n todo -l app=todo-backend && sleep 30 && kubectl get pods -n todo"
+
+    - test: "Database connection working"
+      description: "Verify backend can connect to Neon PostgreSQL"
+      steps:
+        - "Check backend logs for database connection"
+        - "Verify no connection errors"
+        - "Create a task to test database write"
+        - "Retrieve task to test database read"
+      expected: "Database connection established, read/write operations successful"
+      command: "kubectl logs -n todo -l app=todo-backend | grep -i 'database\\|connection'"
+
+    - test: "Frontend-backend communication"
+      description: "Verify frontend can communicate with backend API"
+      steps:
+        - "Open browser developer console"
+        - "Navigate to http://localhost:30030"
+        - "Check network tab for API calls"
+        - "Verify API calls to http://localhost:30080 succeed"
+      expected: "API calls succeed with 200 status codes"
+      manual: true
+
+  # Performance tests
+  performance_tests:
+    - test: "Pod startup time"
+      description: "Measure time from pod creation to Running state"
+      command: "kubectl get pods -n todo -w"
+      expected: "Pods reach Running state within 2 minutes"
+      threshold: "120s"
+
+    - test: "Frontend load time"
+      description: "Measure time to load frontend in browser"
+      command: "curl -w '@curl-format.txt' -o /dev/null -s http://localhost:30030"
+      expected: "Page loads within 5 seconds"
+      threshold: "5s"
+
+    - test: "Backend response time"
+      description: "Measure backend health check response time"
+      command: "curl -w '%{time_total}' -o /dev/null -s http://localhost:30080/health"
+      expected: "Response within 1 second"
+      threshold: "1s"
+
+  # Resource tests
+  resource_tests:
+    - test: "Backend resource usage"
+      description: "Verify backend pod stays within resource limits"
+      command: "kubectl top pod -n todo -l app=todo-backend"
+      expected: "CPU < 500m, Memory < 512Mi"
+
+    - test: "Frontend resource usage"
+      description: "Verify frontend pod stays within resource limits"
+      command: "kubectl top pod -n todo -l app=todo-frontend"
+      expected: "CPU < 200m, Memory < 256Mi"
+
+    - test: "No pod evictions"
+      description: "Verify no pods evicted due to resource pressure"
+      command: "kubectl get events -n todo | grep -i evict"
+      expected: ""  # No evictions
+
+# Acceptance criteria summary
+acceptance_criteria:
+  deployment:
+    - Minikube cluster running with adequate resources (2 CPU, 4GB RAM)
+    - Docker images built and loaded into Minikube
+    - Kubernetes namespace 'todo' created
+    - Secrets and ConfigMaps created
+    - Helm charts installed successfully
+    - All pods in Running state within 2 minutes
+    - All services created with correct NodePort configuration
+
+  functionality:
+    - Frontend accessible at http://localhost:30030
+    - Backend accessible at http://localhost:30080
+    - Backend health check returns 200 status
+    - Chat interface loads and renders correctly
+    - Tasks can be created via chatbot
+    - Tasks can be updated via chatbot
+    - Tasks can be deleted via chatbot
+    - Tasks persist across pod restarts
+    - Database connection working
+    - No error logs in pod output
+
+  performance:
+    - Pod startup time < 2 minutes
+    - Frontend load time < 5 seconds
+    - Backend health check response < 1 second
+    - Task operations complete < 3 seconds
+
+  quality:
+    - Helm charts pass 'helm lint' validation
+    - No pod crash loops
+    - No failed health checks
+    - Resource limits not exceeded
+    - Deployment reproducible (can be torn down and redeployed)
+
+# Troubleshooting guide
+troubleshooting:
+  - issue: "Pods stuck in Pending state"
+    cause: "Insufficient resources or image pull failure"
+    solution: "Check: kubectl describe pod -n todo <pod-name>. Increase Minikube resources or verify image exists."
+
+  - issue: "Pods in CrashLoopBackOff"
+    cause: "Application startup failure or missing environment variables"
+    solution: "Check logs: kubectl logs -n todo <pod-name>. Verify Secret and ConfigMap exist."
+
+  - issue: "Service not accessible"
+    cause: "NodePort not configured or firewall blocking"
+    solution: "Verify service: kubectl get svc -n todo. Check NodePort value. Use 'minikube service' command."
+
+  - issue: "Health checks failing"
+    cause: "Application not responding or incorrect probe configuration"
+    solution: "Check pod logs. Verify health endpoint exists. Adjust probe timing in values.yaml."
+
+  - issue: "Database connection failure"
+    cause: "Incorrect DATABASE_URL or network issue"
+    solution: "Verify Secret value. Check backend logs. Test connection from pod: kubectl exec -it -n todo <pod-name> -- curl <db-url>"
+
+  - issue: "Frontend can't reach backend"
+    cause: "Incorrect API_URL or CORS issue"
+    solution: "Verify ConfigMap value. Check browser console for errors. Verify backend CORS configuration."

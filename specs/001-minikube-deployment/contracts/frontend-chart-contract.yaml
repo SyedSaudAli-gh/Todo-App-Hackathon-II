@@ -1,0 +1,121 @@
+# Frontend Helm Chart Contract
+
+chart:
+  name: todo-frontend
+  version: 1.0.0
+  description: "Todo AI Chatbot Frontend - Next.js + ChatKit"
+  appVersion: "1.0.0"
+
+values:
+  # Image configuration
+  image:
+    repository: todo-frontend
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+
+  # Replica configuration
+  replicaCount: 1
+
+  # Service configuration
+  service:
+    type: NodePort
+    port: 3000
+    targetPort: 3000
+    nodePort: 30030
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # Environment variables
+  env:
+    - name: NEXT_PUBLIC_API_URL
+      valueFrom:
+        configMapKeyRef:
+          name: todo-config
+          key: api-url
+
+  # Health checks
+  healthCheck:
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 3000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534  # nobody user
+    readOnlyRootFilesystem: false
+
+  # Update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+templates:
+  required:
+    - deployment.yaml
+    - service.yaml
+    - configmap.yaml
+  optional:
+    - _helpers.tpl
+
+validation:
+  # Pre-deployment validation
+  pre_deployment:
+    - check: "Image exists"
+      command: "docker images | grep todo-frontend:v1.0.0"
+      expected: "todo-frontend.*v1.0.0"
+
+    - check: "ConfigMap exists"
+      command: "kubectl get configmap todo-config -n todo"
+      expected: "todo-config"
+
+  # Post-deployment validation
+  post_deployment:
+    - check: "Pod running"
+      command: "kubectl get pods -n todo -l app=todo-frontend"
+      expected: ".*Running"
+      timeout: 120s
+
+    - check: "Service created"
+      command: "kubectl get service todo-frontend -n todo"
+      expected: "todo-frontend.*NodePort.*30030"
+
+    - check: "Frontend accessible"
+      command: "curl -s -o /dev/null -w '%{http_code}' http://localhost:30030"
+      expected: "200"
+      requires: "NodePort accessible"
+
+    - check: "No error logs"
+      command: "kubectl logs -n todo -l app=todo-frontend --tail=50 | grep -i error"
+      expected: ""  # No errors
+
+acceptance_criteria:
+  - Pod reaches Running state within 2 minutes
+  - Health checks pass within 30 seconds of pod start
+  - Service accessible via NodePort 30030
+  - Frontend loads in browser within 5 seconds
+  - Chat interface renders correctly
+  - No error logs in pod output
+  - Resource limits not exceeded

@@ -5,6 +5,7 @@ This module provides JWT token validation using RS256 algorithm
 for Better Auth tokens. User identity is extracted from the 'sub' claim.
 """
 import logging
+import base64
 from typing import Optional
 from jose import jwt, JWTError
 from fastapi import HTTPException, status
@@ -34,10 +35,13 @@ def validate_jwt_token(token: str) -> dict:
         )
 
     try:
+        # Decode base64-encoded public key to PEM format
+        public_key_pem = base64.b64decode(settings.JWT_PUBLIC_KEY).decode('utf-8')
+
         # Decode and validate JWT token with RS256
         payload = jwt.decode(
             token,
-            settings.JWT_PUBLIC_KEY,
+            public_key_pem,
             algorithms=[settings.JWT_ALGORITHM]
         )
         return payload
