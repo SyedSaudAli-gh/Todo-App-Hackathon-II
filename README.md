@@ -1,127 +1,419 @@
 # Todo Chatbot Application
 
-A full-stack todo management application with AI chatbot integration, deployed on Kubernetes.
+A full-stack todo management application with AI chatbot integration, deployed on Local Kubernetes using Minikube with Helm charts.
 
-## Project Phases
+## 📋 Project Overview
+
+**Todo App with AI Chatbot** is a production-ready task management system featuring:
+
+- 🎯 **Smart Todo Management**: Create, update, complete, and delete tasks through an intuitive web interface
+- 🤖 **AI-Powered Chatbot**: Natural language interaction using Google Gemini for intelligent todo operations
+- 🔐 **Secure Authentication**: User authentication with NextAuth and JWT tokens
+- 🗄️ **Persistent Storage**: PostgreSQL database for reliable data persistence
+- ☸️ **Cloud-Native Architecture**: Deployed on Kubernetes with high availability and scalability
+- 🚀 **Modern Tech Stack**: Next.js frontend + FastAPI backend with RESTful APIs
+
+## 🏗️ Project Phases
 
 - **Phase I**: In-memory Python CLI todo app ✅
 - **Phase II**: Web application with FastAPI backend and Next.js frontend ✅
 - **Phase III**: AI chatbot integration with Gemini ✅
 - **Phase IV**: Local Kubernetes deployment with Minikube ✅
 
-## Current Deployment: Phase IV (Kubernetes)
+---
 
-The application is deployed on Kubernetes using Minikube with:
-- **Frontend**: Next.js web application (2 replicas)
-- **Backend**: FastAPI REST API (2 replicas)
-- **Services**: NodePort for external access
-- **Health Checks**: Liveness and readiness probes
-- **High Availability**: Multiple replicas with load balancing
+## 🛠️ Tech Stack
 
-### Quick Start (Kubernetes)
+### Frontend
+- **Framework**: Next.js 15.5.9 (React 19)
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Authentication**: NextAuth.js with Better Auth
+- **State Management**: React Hooks
+- **API Client**: Fetch API with TypeScript
 
-1. **Start Minikube**:
-   ```bash
-   minikube start
-   ```
+### Backend API
+- **Framework**: FastAPI (Python 3.11+)
+- **Database**: PostgreSQL with SQLModel ORM
+- **Authentication**: JWT (RS256) with python-jose
+- **AI Integration**: Google Gemini API
+- **CORS**: Configured for frontend communication
 
-2. **Access Frontend** (Web UI):
-   ```bash
-   minikube service todo-frontend -n todo
-   ```
+### Infrastructure
+- **Container Orchestration**: Kubernetes (Minikube)
+- **Package Manager**: Helm 3.x
+- **Containerization**: Docker
+- **Service Mesh**: Kubernetes Services (NodePort)
+- **Configuration**: ConfigMaps and Secrets
+- **High Availability**: 2 replicas per service with load balancing
 
-3. **Access Backend** (API):
-   ```bash
-   minikube service todo-backend -n todo
-   ```
+### DevOps
+- **Local Cluster**: Minikube
+- **CLI Tools**: kubectl, helm, docker
+- **Port Forwarding**: kubectl port-forward for local access
 
-**Important**: Keep terminal windows open while using the application.
+---
 
-For detailed access instructions, troubleshooting, and deployment management, see [KUBERNETES_ACCESS.md](./KUBERNETES_ACCESS.md).
+## 🚀 Phase IV: Kubernetes Deployment
 
-### Deployment Status
+### Prerequisites
+
+Before deploying, ensure you have:
+
+- ✅ **Docker Desktop** (Windows/Mac) or Docker Engine (Linux) - Running
+- ✅ **Minikube** - Installed and configured
+- ✅ **kubectl** - Kubernetes command-line tool
+- ✅ **Helm 3.x** - Kubernetes package manager
+
+### Deployment Steps
+
+Follow these exact commands to deploy the Todo App on Minikube:
+
+#### 1️⃣ Start Minikube
 
 ```bash
-# Check deployment status
+minikube start
+```
+
+**Expected Output**: Minikube cluster starts successfully
+
+#### 2️⃣ Create Namespace
+
+```bash
+kubectl create namespace todo
+```
+
+**Note**: If namespace already exists, you'll see an error - this is safe to ignore.
+
+#### 3️⃣ Apply Configuration Files
+
+```bash
+# Apply secrets (JWT keys, OAuth credentials, database URL)
+kubectl apply -f helm/secrets.yaml
+
+# Apply config maps (environment variables)
+kubectl apply -f helm/configmap.yaml
+```
+
+**Expected Output**:
+```
+secret/todo-secrets created
+configmap/todo-config created
+```
+
+#### 4️⃣ Deploy Backend with Helm
+
+```bash
+helm upgrade --install todo-backend helm/todo-backend -n todo
+```
+
+**Expected Output**:
+```
+Release "todo-backend" has been upgraded. Happy Helming!
+NAME: todo-backend
+NAMESPACE: todo
+STATUS: deployed
+```
+
+#### 5️⃣ Deploy Frontend with Helm
+
+```bash
+helm upgrade --install todo-frontend helm/todo-frontend -n todo
+```
+
+**Expected Output**:
+```
+Release "todo-frontend" has been upgraded. Happy Helming!
+NAME: todo-frontend
+NAMESPACE: todo
+STATUS: deployed
+```
+
+#### 6️⃣ Verify Deployment
+
+```bash
+# Check all pods are running
+kubectl get pods -n todo
+```
+
+**Expected Output**:
+```
+NAME                             READY   STATUS    RESTARTS   AGE
+todo-backend-xxxxxxxxxx-xxxxx    1/1     Running   0          2m
+todo-backend-xxxxxxxxxx-xxxxx    1/1     Running   0          2m
+todo-frontend-xxxxxxxxxx-xxxxx   1/1     Running   0          1m
+todo-frontend-xxxxxxxxxx-xxxxx   1/1     Running   0          1m
+```
+
+**All pods should show `Running` status with `1/1` ready.**
+
+#### 7️⃣ Set Up Port Forwarding (IMPORTANT)
+
+Open **two separate terminal windows** and run:
+
+**Terminal 1 - Frontend:**
+```bash
+kubectl port-forward -n todo svc/todo-frontend 3000:3000
+```
+
+**Terminal 2 - Backend:**
+```bash
+kubectl port-forward -n todo svc/todo-backend 8001:8001
+```
+
+**⚠️ Important**: Keep both terminal windows open while using the application. Closing them will stop access to the services.
+
+---
+
+## 🌐 Access the Application
+
+Once port forwarding is active, access the application at:
+
+- **Frontend (Web UI)**: http://localhost:3000
+- **Backend API**: http://localhost:8001/api/v1
+- **API Documentation**: http://localhost:8001/api/v1/docs
+- **Health Check**: http://localhost:8001/api/v1/health
+
+### Testing the Deployment
+
+1. **Open Frontend**: Navigate to http://localhost:3000
+2. **Sign Up**: Create a new account
+3. **Login**: Authenticate with your credentials
+4. **Create Todos**: Add tasks via the UI
+5. **Test Chatbot**: Use natural language to manage todos
+6. **Verify API**: Check http://localhost:8001/api/v1/docs for API endpoints
+
+---
+
+## 📊 Monitoring & Management
+
+### Check Deployment Status
+
+```bash
+# View all resources in todo namespace
 kubectl get all -n todo
 
-# View logs
-kubectl logs -n todo -l app=todo-frontend --tail=50
-kubectl logs -n todo -l app=todo-backend --tail=50
+# Check pod status
+kubectl get pods -n todo
+
+# Check services
+kubectl get svc -n todo
+
+# View pod details
+kubectl describe pod <pod-name> -n todo
 ```
 
-## Features
+### View Logs
 
-- ✅ Add, view, complete, update, and delete todo items
-- ✅ AI chatbot for natural language todo management
-- ✅ Persistent storage with PostgreSQL
-- ✅ User authentication with NextAuth
-- ✅ RESTful API with FastAPI
-- ✅ Modern web UI with Next.js and Tailwind CSS
-- ✅ Kubernetes deployment with Helm charts
-- ✅ Health checks and monitoring
-- ✅ High availability with multiple replicas
-
-## Prerequisites
-
-### For Kubernetes Deployment (Phase IV)
-- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
-- Minikube
-- kubectl
-- Helm 3.x
-
-## Installation
-
-No installation required. The application runs directly from the source code.
-
-## Usage
-
-Run the application from the command line with one of the following commands:
-
-### Add a new todo item
 ```bash
-python todo_app.py add "Your todo description here"
+# Frontend logs
+kubectl logs -n todo -l app.kubernetes.io/name=todo-frontend --tail=50
+
+# Backend logs
+kubectl logs -n todo -l app.kubernetes.io/name=todo-backend --tail=50
+
+# Follow logs in real-time
+kubectl logs -n todo -l app.kubernetes.io/name=todo-backend -f
 ```
 
-### List all todo items
+### Restart Deployments
+
 ```bash
-python todo_app.py list
+# Restart frontend
+kubectl rollout restart deployment/todo-frontend -n todo
+
+# Restart backend
+kubectl rollout restart deployment/todo-backend -n todo
+
+# Check rollout status
+kubectl rollout status deployment/todo-frontend -n todo
 ```
 
-### Mark a todo item as complete
+### Stop Port Forwarding
+
 ```bash
-python todo_app.py complete 1
-```
-Replace `1` with the position number of the item you want to mark complete.
+# Find port-forward processes
+ps aux | grep "port-forward"
 
-### Delete a todo item
+# Kill specific process
+kill <process-id>
+
+# Or kill all port-forward processes
+pkill -f "port-forward"
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Issue: Pods Not Running
+
+**Symptom**: Pods stuck in `Pending`, `CrashLoopBackOff`, or `Error` state
+
+**Solution**:
 ```bash
-python todo_app.py delete 1
-```
-Replace `1` with the position number of the item you want to delete.
+# Check pod details
+kubectl describe pod <pod-name> -n todo
 
-### Update a todo item
+# Check pod logs
+kubectl logs <pod-name> -n todo
+
+# Restart deployment
+kubectl rollout restart deployment/<deployment-name> -n todo
+```
+
+### Issue: Port Forwarding Not Working
+
+**Symptom**: Cannot access http://localhost:3000 or http://localhost:8001
+
+**Solution**:
 ```bash
-python todo_app.py update 1 "Your new description here"
-```
-Replace `1` with the position number of the item you want to update.
+# Kill existing port-forward processes
+pkill -f "port-forward"
 
-### Get help
+# Restart port forwarding
+kubectl port-forward -n todo svc/todo-frontend 3000:3000 &
+kubectl port-forward -n todo svc/todo-backend 8001:8001 &
+```
+
+### Issue: Minikube Not Starting
+
+**Symptom**: `minikube start` fails or times out
+
+**Solution**:
 ```bash
-python todo_app.py help
+# Delete and recreate cluster
+minikube delete
+minikube start --cpus=4 --memory=7g
+
+# Redeploy application
+kubectl create namespace todo
+kubectl apply -f helm/secrets.yaml
+kubectl apply -f helm/configmap.yaml
+helm upgrade --install todo-backend helm/todo-backend -n todo
+helm upgrade --install todo-frontend helm/todo-frontend -n todo
 ```
 
-## Example Workflow
+### Issue: 404 Errors on Todos Page
 
-1. Add a new todo: `python todo_app.py add "Buy groceries"`
-2. View your todos: `python todo_app.py list`
-3. Mark as complete: `python todo_app.py complete 1`
-4. Add another todo: `python todo_app.py add "Walk the dog"`
-5. View updated list: `python todo_app.py list`
+**Symptom**: Frontend shows 404 errors when loading todos
 
-## Notes
+**Solution**: Verify frontend is using correct API URL (localhost:8001, not localhost:8000)
+```bash
+# Check frontend environment variables
+kubectl exec -n todo <frontend-pod> -- printenv | grep API
 
-- All data is stored in memory only and will be lost when the application exits
-- Item positions are 1-based (first item is position 1, not 0)
-- The application uses only Python standard library modules
-- No external dependencies required
+# Should show: NEXT_PUBLIC_API_BASE_URL=http://localhost:8001/api/v1
+```
+
+### Issue: 401 Unauthorized on Chatbot
+
+**Symptom**: Chatbot returns 401 errors
+
+**Solution**: Verify JWT configuration
+```bash
+# Check backend has JWT_PUBLIC_KEY
+kubectl exec -n todo <backend-pod> -- printenv | grep JWT_PUBLIC_KEY
+
+# Restart backend if missing
+kubectl rollout restart deployment/todo-backend -n todo
+```
+
+---
+
+## ✨ Features
+
+- ✅ **Todo Management**: Add, view, complete, update, and delete todo items
+- ✅ **AI Chatbot**: Natural language todo management with Google Gemini
+- ✅ **User Authentication**: Secure login/signup with NextAuth and JWT
+- ✅ **Persistent Storage**: PostgreSQL database for reliable data persistence
+- ✅ **RESTful API**: FastAPI backend with comprehensive API documentation
+- ✅ **Modern Web UI**: Next.js with Tailwind CSS and shadcn/ui components
+- ✅ **Kubernetes Deployment**: High availability with Helm charts
+- ✅ **Health Monitoring**: Liveness and readiness probes
+- ✅ **Load Balancing**: Multiple replicas with automatic traffic distribution
+- ✅ **OAuth Support**: Google, Facebook, LinkedIn social login (configurable)
+
+---
+
+## 📚 Additional Documentation
+
+- **[DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)**: Complete deployment guide with troubleshooting
+- **[KUBERNETES_ACCESS.md](./KUBERNETES_ACCESS.md)**: Detailed Kubernetes access instructions
+- **[OAUTH_TESTING_GUIDE.md](./OAUTH_TESTING_GUIDE.md)**: OAuth configuration guide
+- **[HELM_FIX_SUMMARY.md](./HELM_FIX_SUMMARY.md)**: Helm configuration fixes and verification
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         User Browser                         │
+│                    http://localhost:3000                     │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         │ Port Forward (3000:3000)
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                   Kubernetes Cluster                         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Frontend Service (todo-frontend)                    │   │
+│  │  ┌──────────────┐         ┌──────────────┐         │   │
+│  │  │ Frontend Pod │         │ Frontend Pod │         │   │
+│  │  │  Next.js     │         │  Next.js     │         │   │
+│  │  │  (v1.0.7)    │         │  (v1.0.7)    │         │   │
+│  │  └──────┬───────┘         └──────┬───────┘         │   │
+│  └─────────┼────────────────────────┼──────────────────┘   │
+│            │                        │                       │
+│            │  API Calls (localhost:8001/api/v1)           │
+│            │                        │                       │
+│  ┌─────────▼────────────────────────▼──────────────────┐   │
+│  │  Backend Service (todo-backend)                      │   │
+│  │  ┌──────────────┐         ┌──────────────┐         │   │
+│  │  │ Backend Pod  │         │ Backend Pod  │         │   │
+│  │  │  FastAPI     │         │  FastAPI     │         │   │
+│  │  │  (v1.0.4)    │         │  (v1.0.4)    │         │   │
+│  │  └──────┬───────┘         └──────┬───────┘         │   │
+│  └─────────┼────────────────────────┼──────────────────┘   │
+│            │                        │                       │
+└────────────┼────────────────────────┼───────────────────────┘
+             │                        │
+             │  Port Forward (8001:8001)
+             │                        │
+             ▼                        ▼
+    ┌─────────────────┐      ┌──────────────────┐
+    │   PostgreSQL    │      │  Google Gemini   │
+    │   (Supabase)    │      │      API         │
+    └─────────────────┘      └──────────────────┘
+```
+
+---
+
+## 🤝 Contributing
+
+This project follows Spec-Driven Development (SDD) principles. All changes must:
+
+1. Have an approved specification in `specs/`
+2. Follow the implementation plan in `specs/<feature>/plan.md`
+3. Complete all tasks in `specs/<feature>/tasks.md`
+4. Pass all tests and validation checks
+
+---
+
+## 📄 License
+
+This project is part of a hackathon submission and is provided as-is for educational purposes.
+
+---
+
+## 🎯 Project Status
+
+**Current Phase**: Phase IV - Kubernetes Deployment ✅
+
+**Deployment Status**: Production-ready on Local Kubernetes (Minikube)
+
+**Last Updated**: February 2026
+
+---
+
+**Built with ❤️ using Spec-Driven Development**
